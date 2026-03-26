@@ -1,193 +1,140 @@
 import React from 'react';
-import { VENDOR_DOC_CONTENT } from '../constants/data';
+import { DOC_PAGES } from '../constants/data';
 
-function renderBlock(block, i) {
-  switch (block.type) {
-    case 'title':
-      return (
-        <div key={i} style={{
-          fontSize: 16,
-          fontWeight: 700,
-          textAlign: 'center',
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-          borderBottom: '2px solid #1a1a1a',
-          paddingBottom: 10,
-          marginBottom: 18,
-        }}>
-          {block.text}
-        </div>
-      );
+export default function DocPreviewPage({ pageIndex }) {
+  const blocks    = DOC_PAGES[pageIndex] || [];
+  const isLastPage = pageIndex === DOC_PAGES.length - 1;
 
-    case 'meta':
-      return (
-        <div key={i} style={{
-          fontSize: 11,
-          color: '#555',
-          textAlign: 'center',
-          fontStyle: 'italic',
-          marginBottom: 16,
-        }}>
-          {block.text}
-        </div>
-      );
-
-    case 'section':
-      return (
-        <div key={i} style={{
-          fontSize: 12,
-          fontWeight: 700,
-          textAlign: 'center',
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
-          margin: '16px 0 10px',
-        }}>
-          {block.text}
-        </div>
-      );
-
-    case 'clause':
-      return (
-        <div key={i} style={{
-          fontSize: 12,
-          fontWeight: 700,
-          margin: '18px 0 6px',
-          display: 'flex',
-          gap: 6,
-        }}>
-          <span>{block.num}</span>
-          <span>{block.text}</span>
-        </div>
-      );
-
-    case 'bullet':
-      return (
-        <div key={i} style={{
-          fontSize: 11,
-          color: '#333',
-          paddingLeft: 16,
-          marginBottom: 6,
-          display: 'flex',
-          gap: 8,
-        }}>
-          <span>•</span>
-          <span>{block.text}</span>
-        </div>
-      );
-
-    case 'body':
-      return (
-        <div key={i} style={{
-          fontSize: 11,
-          color: '#333',
-          marginBottom: 8,
-          textAlign: 'justify',
-        }}>
-          {block.text}
-        </div>
-      );
-
-    case 'sig':
-      return (
-        <div key={i} style={{
-          fontSize: 11,
-          marginTop: 28,
-          paddingTop: 16,
-          borderTop: '1px solid #ccc',
-          color: '#555',
-          fontStyle: 'italic',
-        }}>
-          {block.text}
-        </div>
-      );
-
-    default:
-      return null;
-  }
-}
-
-const sigLineStyle = {
-  borderBottom: '1px solid #999',
-  width: '80%',
-  height: 24,
-  marginTop: 16,
-  marginBottom: 4,
-};
-
-export default function DocPreviewPage({ zoom }) {
   return (
     <div style={{
-      transformOrigin: 'top center',
-      transform: `scale(${zoom / 100})`,
-      width: zoom < 100 ? `${10000 / zoom}%` : '100%',
-      transition: 'transform 0.2s ease',
+      width: 595,
+      background: '#fff',
+      padding: '52px 56px 48px',
+      fontFamily: "Georgia, 'Times New Roman', serif",
+      color: '#1a1a1a',
+      lineHeight: 1.75,
+      position: 'relative',
+      minHeight: 840,
+      boxSizing: 'border-box',
     }}>
+      {/* Watermark */}
       <div style={{
-        background: '#fff',
-        padding: '48px 52px',
-        fontFamily: "Georgia, 'Times New Roman', serif",
-        color: '#1a1a1a',
-        minHeight: 800,
-        lineHeight: 1.7,
-        position: 'relative',
+        position: 'absolute',
+        top: '42%',
+        left: '50%',
+        transform: 'translate(-50%, -50%) rotate(-35deg)',
+        fontSize: 60,
+        fontWeight: 900,
+        color: 'rgba(232,56,56,0.04)',
+        whiteSpace: 'nowrap',
+        pointerEvents: 'none',
+        letterSpacing: 6,
+        userSelect: 'none',
       }}>
-        {/* Watermark */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%) rotate(-35deg)',
-          fontSize: 52,
-          fontWeight: 900,
-          color: 'rgba(232,56,56,0.05)',
-          userSelect: 'none',
-          pointerEvents: 'none',
-          whiteSpace: 'nowrap',
-          zIndex: 0,
-        }}>
-          TEMPLATE
-        </div>
+        TEMPLATE
+      </div>
 
-        {/* Content */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {VENDOR_DOC_CONTENT.map((block, i) => renderBlock(block, i))}
+      {/* Blocks */}
+      {blocks.map((b, i) => {
+        if (b.type === 'title') return (
+          <div key={i} style={{
+            fontSize: 15, fontWeight: 700, textAlign: 'center',
+            marginBottom: 16, letterSpacing: 1.2, textTransform: 'uppercase',
+            borderBottom: '1.5px solid #1a1a1a', paddingBottom: 10,
+          }}>{b.text}</div>
+        );
+        if (b.type === 'meta') return (
+          <div key={i} style={{
+            fontSize: 10.5, color: '#555', marginBottom: 14,
+            textAlign: 'center', fontStyle: 'italic',
+          }}>{b.text}</div>
+        );
+        if (b.type === 'section') return (
+          <div key={i} style={{
+            fontSize: 11.5, fontWeight: 700, textAlign: 'center',
+            margin: '18px 0 10px', textTransform: 'uppercase', letterSpacing: 0.6,
+          }}>{b.text}</div>
+        );
+        if (b.type === 'clause') return (
+          <div key={i} style={{
+            fontSize: 11.5, fontWeight: 700, margin: '18px 0 5px',
+            display: 'flex', gap: 5,
+          }}>
+            <span>{b.num}</span><span>{b.text}</span>
+          </div>
+        );
+        if (b.type === 'bullet') return (
+          <div key={i} style={{
+            fontSize: 11, color: '#333', paddingLeft: 18, marginBottom: 5,
+            display: 'flex', gap: 8,
+          }}>
+            <span style={{ flexShrink: 0 }}>•</span>
+            <span>{b.text}</span>
+          </div>
+        );
+        if (b.type === 'sig') return (
+          <div key={i} style={{
+            fontSize: 11, marginTop: 20, paddingTop: 14,
+            borderTop: '1px solid #ccc', color: '#555', fontStyle: 'italic', marginBottom: 24,
+          }}>{b.text}</div>
+        );
+        // body (default)
+        return (
+          <div key={i} style={{
+            fontSize: 11, color: '#333', marginBottom: 9, textAlign: 'justify',
+          }}>{b.text}</div>
+        );
+      })}
 
-          {/* Signature block */}
+      {/* Signature block — last page only */}
+      {isLastPage && (
+        <>
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: 32,
-            marginTop: 40,
+            gap: 48,
+            marginTop: 32,
           }}>
-            {['For the Client', 'For the Vendor'].map(label => (
-              <div key={label} style={{ fontSize: 11, color: '#333' }}>
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>{label}</div>
-                <div style={sigLineStyle} />
-                <div style={{ fontSize: 10, color: '#888' }}>Signature</div>
-                <div style={{ ...sigLineStyle, marginTop: 20 }} />
-                <div style={{ fontSize: 10, color: '#888' }}>Name</div>
-                <div style={{ ...sigLineStyle, marginTop: 20 }} />
-                <div style={{ fontSize: 10, color: '#888' }}>Designation</div>
+            {['Client', 'Vendor'].map(p => (
+              <div key={p}>
+                <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 12 }}>
+                  For the {p}
+                </div>
+                <div style={{ fontSize: 11, color: '#555', lineHeight: 2.2 }}>
+                  <div>Signature: ___________________</div>
+                  <div>Name: ______________________</div>
+                  <div>Designation: ________________</div>
+                  <div>Date: _______________________</div>
+                </div>
               </div>
             ))}
           </div>
-
-          {/* Disclaimer */}
           <div style={{
-            marginTop: 32,
-            borderTop: '1px solid #ddd',
+            marginTop: 36,
             paddingTop: 12,
-            fontSize: 9.5,
-            color: '#888',
+            borderTop: '1px solid #ddd',
+            fontSize: 9,
+            color: '#999',
             fontStyle: 'italic',
-            lineHeight: 1.5,
+            lineHeight: 1.6,
           }}>
-            Disclaimer: This document is a general template for informational purposes only and does not
-            constitute legal advice. Parties are advised to seek independent legal counsel before executing
-            this Agreement. Peko Payment Services LLC makes no representations as to the legal sufficiency
-            of this template in any particular jurisdiction or for any particular transaction.
+            Disclaimer: This template is made available for general informational purposes only
+            and does not constitute legal, professional, or other advice. No lawyer-client
+            relationship is created by use of this template.
           </div>
-        </div>
+        </>
+      )}
+
+      {/* Page number */}
+      <div style={{
+        position: 'absolute',
+        bottom: 18,
+        right: 52,
+        fontSize: 9.5,
+        color: '#aaa',
+        fontFamily: "Inter, -apple-system, sans-serif",
+      }}>
+        {pageIndex + 1} / {DOC_PAGES.length}
       </div>
     </div>
   );

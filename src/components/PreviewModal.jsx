@@ -1,151 +1,113 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { C } from '../constants/colors';
 import { IcoClose, IcoDownload } from './Icons';
 import DocPreviewPage from './DocPreviewPage';
+import { DOC_PAGES } from '../constants/data';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-/* ── Sub-components ─────────────────────────────────────────────────── */
+/* ── Inline icons ────────────────────────────────────────────────────── */
 
-function ZoomStepButton({ onClick, children }) {
-  const [hovered, setHovered] = useState(false);
+const IcoPan = ({ active }) => (
+  <svg width="15" height="15" fill="none" stroke={active ? '#E83838' : '#8A8A8A'} strokeWidth="2" viewBox="0 0 24 24">
+    <path d="M18 11V8a2 2 0 0 0-4 0v3" />
+    <path d="M14 11V6a2 2 0 0 0-4 0v5" />
+    <path d="M10 11V8a2 2 0 0 0-4 0v6a8 8 0 0 0 16 0v-5a2 2 0 0 0-4 0v3" />
+  </svg>
+);
+
+const IcoChevLeft = () => (
+  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const IcoChevRight2 = () => (
+  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+
+/* ── Small reusable button atoms ─────────────────────────────────────── */
+
+function ZoomStepBtn({ onClick, children }) {
+  const [h, setH] = useState(false);
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
       style={{
-        width: 30,
-        height: 30,
-        border: 'none',
-        background: hovered ? C.subtle : 'transparent',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 18,
-        fontWeight: 400,
-        color: C.text,
-        outline: 'none',
-        transition: 'background 0.15s',
-        padding: 0,
-        fontFamily: 'inherit',
-        lineHeight: 1,
+        width: 30, height: 30, border: 'none',
+        background: h ? C.subtle : 'transparent',
+        cursor: 'pointer', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', fontSize: 18, color: C.text,
+        outline: 'none', transition: 'background 0.15s', padding: 0,
+        fontFamily: 'inherit', lineHeight: 1,
       }}
-    >
-      {children}
-    </button>
+    >{children}</button>
   );
 }
 
-function ResetButton({ onClick }) {
-  const [hovered, setHovered] = useState(false);
+function ResetBtn({ onClick }) {
+  const [h, setH] = useState(false);
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
       style={{
-        height: 30,
-        padding: '0 10px',
-        borderRadius: 8,
-        border: `1px solid ${hovered ? C.red : C.border}`,
+        height: 30, padding: '0 10px', borderRadius: 8,
+        border: `1px solid ${h ? C.red : C.border}`,
+        background: 'transparent', color: h ? C.red : C.muted,
+        fontSize: 11, fontWeight: 600, cursor: 'pointer',
+        outline: 'none', transition: 'all 0.15s', fontFamily: 'inherit',
+        whiteSpace: 'nowrap', flexShrink: 0,
+      }}
+    >Reset</button>
+  );
+}
+
+function NavPageBtn({ onClick, disabled, children }) {
+  const [h, setH] = useState(false);
+  const active = !disabled && h;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
+      style={{
+        width: 28, height: 28, borderRadius: 7,
+        border: `1px solid ${active ? C.red : C.border}`,
         background: 'transparent',
-        color: hovered ? C.red : C.muted,
-        fontSize: 11,
-        fontWeight: 600,
-        cursor: 'pointer',
-        outline: 'none',
-        transition: 'all 0.15s',
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      Reset
-    </button>
-  );
-}
-
-function CloseButton({ onClose }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      onClick={onClose}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: 30,
-        height: 30,
-        borderRadius: 8,
-        border: `1px solid ${C.border}`,
-        background: hovered ? C.subtle : 'transparent',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        padding: 0,
-        outline: 'none',
-        transition: 'background 0.15s',
+        color: active ? C.red : C.muted,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.3 : 1,
+        transition: 'all 0.18s', outline: 'none', padding: 0,
         flexShrink: 0,
       }}
-    >
-      <IcoClose c={C.muted} s={14} />
-    </button>
+    >{children}</button>
   );
 }
 
-function UseTemplateButton({ isMobile }) {
-  const [hovered, setHovered] = useState(false);
+function DownloadBtn({ isMobile }) {
+  const [h, setH] = useState(false);
   return (
     <button
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
       style={{
-        padding: isMobile ? '8px 14px' : '9px 20px',
-        borderRadius: 10,
-        border: `1.5px solid ${hovered ? C.text : C.border}`,
-        background: C.cardBg,
-        color: hovered ? C.text : C.muted,
-        fontSize: isMobile ? 13 : 14,
-        fontWeight: 600,
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-        outline: 'none',
-        flex: isMobile ? 1 : 'none',
-      }}
-    >
-      Use Template
-    </button>
-  );
-}
-
-function DownloadButton({ isMobile }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: isMobile ? '8px 14px' : '9px 20px',
-        borderRadius: 10,
-        border: 'none',
+        padding: isMobile ? '9px 20px' : '10px 24px',
+        borderRadius: 10, border: 'none',
         background: C.redGrad,
         boxShadow: '0 2px 8px rgba(200,40,40,0.25)',
-        color: '#fff',
-        fontSize: isMobile ? 13 : 14,
-        fontWeight: 600,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 7,
-        opacity: hovered ? 0.88 : 1,
-        transition: 'opacity 0.15s',
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-        outline: 'none',
-        flex: isMobile ? 1 : 'none',
+        color: '#fff', fontSize: 14, fontWeight: 700,
+        cursor: 'pointer', display: 'flex', alignItems: 'center',
+        gap: 7, opacity: h ? 0.88 : 1,
+        transition: 'opacity 0.15s', fontFamily: 'inherit',
+        whiteSpace: 'nowrap', outline: 'none',
+        ...(isMobile ? { flex: 1, justifyContent: 'center' } : {}),
       }}
     >
       <IcoDownload c="#fff" s={15} />
@@ -154,29 +116,64 @@ function DownloadButton({ isMobile }) {
   );
 }
 
-/* ── Main modal ─────────────────────────────────────────────────────── */
+/* ── Main component ──────────────────────────────────────────────────── */
 
 export default function PreviewModal({ docName, cat, onClose }) {
-  const [zoom, setZoom]  = useState(85);
-  const { isMobile }     = useBreakpoint();
+  const { isMobile } = useBreakpoint();
+  const total = DOC_PAGES.length;
 
+  const [zoom,      setZoom]      = useState(100);
+  const [panMode,   setPanMode]   = useState(false);
+  const [isPanning, setIsPanning] = useState(false);
+  const [pan,       setPan]       = useState({ x: 0, y: 0 });
+  const [page,      setPage]      = useState(0);
+
+  const panStartRef = useRef(null);
+
+  // Reset everything when a new doc is opened
   useEffect(() => {
-    const handler = e => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    setPage(0); setPan({ x: 0, y: 0 }); setZoom(isMobile ? 60 : 100);
+    setPanMode(false);
+  }, [docName]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Adjust zoom when viewport size changes
+  useEffect(() => {
+    setZoom(z => isMobile ? Math.min(z, 70) : z);
+  }, [isMobile]);
+
+  // Escape key
+  useEffect(() => {
+    const h = e => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
   }, [onClose]);
 
-  // Auto-reduce zoom on mobile for better fit
-  useEffect(() => {
-    setZoom(isMobile ? 60 : 85);
-  }, [isMobile]);
+  const handleReset = () => { setZoom(100); setPan({ x: 0, y: 0 }); };
+
+  const goPage = dir => {
+    setPage(p => Math.min(total - 1, Math.max(0, p + dir)));
+    setPan({ x: 0, y: 0 });
+  };
+
+  const goToPage = i => { setPage(i); setPan({ x: 0, y: 0 }); };
+
+  const onMD = e => {
+    if (!panMode) return;
+    panStartRef.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+    setIsPanning(true);
+    e.preventDefault();
+  };
+  const onMM = e => {
+    if (!isPanning || !panStartRef.current) return;
+    setPan({ x: e.clientX - panStartRef.current.x, y: e.clientY - panStartRef.current.y });
+  };
+  const onMU = () => { setIsPanning(false); panStartRef.current = null; };
 
   return (
     <div
       onClick={onClose}
       style={{
-        position: 'fixed',
-        inset: 0,
+        position: 'fixed', inset: 0,
         background: 'rgba(26,26,26,0.55)',
         zIndex: 1000,
         display: 'flex',
@@ -188,8 +185,8 @@ export default function PreviewModal({ docName, cat, onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: isMobile ? '100%' : 'min(900px, 96vw)',
-          height: isMobile ? '92vh' : 'min(92vh, 860px)',
+          width: isMobile ? '100%' : 'min(940px, 96vw)',
+          height: isMobile ? '92vh' : 'min(93vh, 880px)',
           borderRadius: isMobile ? '20px 20px 0 0' : 20,
           background: C.cardBg,
           boxShadow: '0 20px 64px rgba(0,0,0,0.25)',
@@ -198,156 +195,242 @@ export default function PreviewModal({ docName, cat, onClose }) {
           overflow: 'hidden',
         }}
       >
-        {/* ── Header ── */}
+
+        {/* ── 1. Header ── */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: isMobile ? '12px 16px' : '14px 22px',
+          display: 'flex', alignItems: 'center',
+          padding: isMobile ? '12px 14px' : '13px 20px',
           borderBottom: `1px solid ${C.border}`,
-          flexShrink: 0,
-          gap: 10,
-          flexWrap: 'wrap',
+          flexShrink: 0, gap: 10, flexWrap: 'wrap',
         }}>
-          {/* Category icon tile */}
+          {/* Doc identity */}
           <div style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
-            background: cat.bg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 16,
-            flexShrink: 0,
+            width: 32, height: 32, borderRadius: 8,
+            background: cat.bg, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', fontSize: 16, flexShrink: 0,
           }}>
             {cat.icon}
           </div>
-
-          {/* Doc info */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: isMobile ? 13 : 14,
-              fontWeight: 700,
-              color: C.text,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              {docName}
-            </div>
+              fontSize: 14, fontWeight: 700, color: C.text,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>{docName}</div>
             {!isMobile && (
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>
                 {cat.name} · DOCX
               </div>
             )}
           </div>
 
-          {/* Zoom control group */}
+          {/* Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {/* Pan toggle */}
+            <PanToggleBtn active={panMode} onClick={() => setPanMode(v => !v)} isMobile={isMobile} />
+
+            <div style={{ width: 1, height: 20, background: C.border }} />
+
+            {/* Zoom group */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center',
+              border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden',
+            }}>
+              <ZoomStepBtn onClick={() => setZoom(z => Math.max(50, z - 10))}>−</ZoomStepBtn>
+              <div style={{
+                width: 48, height: 30,
+                borderLeft: `1px solid ${C.border}`, borderRight: `1px solid ${C.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, fontWeight: 600, color: C.text, userSelect: 'none',
+              }}>{zoom}%</div>
+              <ZoomStepBtn onClick={() => setZoom(z => Math.min(200, z + 10))}>+</ZoomStepBtn>
+            </div>
+
+            {!isMobile && <ResetBtn onClick={handleReset} />}
+
+            <div style={{ width: 1, height: 20, background: C.border }} />
+
+            {/* Close */}
+            <CloseBtn onClose={onClose} />
+          </div>
+        </div>
+
+        {/* ── 2. A4 Viewport ── */}
+        <div
+          onMouseDown={onMD}
+          onMouseMove={onMM}
+          onMouseUp={onMU}
+          onMouseLeave={onMU}
+          style={{
+            flex: 1,
+            overflow: panMode ? 'hidden' : 'auto',
+            background: '#3A3A3A',
+            position: 'relative',
+            cursor: panMode ? (isPanning ? 'grabbing' : 'grab') : 'default',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            border: `1px solid ${C.border}`,
-            borderRadius: 8,
-            overflow: 'hidden',
-            flexShrink: 0,
+            position: panMode ? 'absolute' : 'relative',
+            top: panMode ? pan.y : 0,
+            left: panMode ? `calc(50% + ${pan.x}px)` : 0,
+            transform: panMode ? 'translateX(-50%)' : 'none',
+            padding: 24,
+            display: 'flex',
+            justifyContent: panMode ? 'flex-start' : 'center',
+            userSelect: 'none',
           }}>
-            <ZoomStepButton onClick={() => setZoom(z => Math.max(50, z - 10))}>−</ZoomStepButton>
             <div style={{
-              width: 46,
-              height: 30,
-              borderLeft: `1px solid ${C.border}`,
-              borderRight: `1px solid ${C.border}`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 12,
-              fontWeight: 600,
-              color: C.text,
-              userSelect: 'none',
+              transformOrigin: 'top center',
+              transform: `scale(${zoom / 100})`,
+              transition: 'transform 0.15s ease',
             }}>
-              {zoom}%
+              <DocPreviewPage pageIndex={page} />
             </div>
-            <ZoomStepButton onClick={() => setZoom(z => Math.min(150, z + 10))}>+</ZoomStepButton>
           </div>
-
-          {!isMobile && <ResetButton onClick={() => setZoom(85)} />}
-          <CloseButton onClose={onClose} />
         </div>
 
-        {/* ── A4 Preview area ── */}
+        {/* ── 3. Pagination strip ── */}
         <div style={{
-          flex: 1,
-          overflow: 'auto',
-          background: '#404040',
-          padding: isMobile ? 12 : 24,
-          WebkitOverflowScrolling: 'touch',
+          height: 46,
+          flexShrink: 0,
+          background: '#FFFFFF',
+          borderTop: `1px solid ${C.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          position: 'relative',
+          padding: '0 20px',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div style={{
-              width: 595,
-              minWidth: 595,
-              boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-              overflow: 'hidden',
-            }}>
-              <DocPreviewPage zoom={zoom} />
-            </div>
+          <NavPageBtn onClick={() => goPage(-1)} disabled={page === 0}>
+            <IcoChevLeft />
+          </NavPageBtn>
+
+          {/* Dot indicators */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {DOC_PAGES.map((_, i) => (
+              <div
+                key={i}
+                onClick={() => goToPage(i)}
+                style={{
+                  width: i === page ? 22 : 8,
+                  height: 8,
+                  borderRadius: 20,
+                  background: i === page ? C.red : '#CECECE',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              />
+            ))}
+          </div>
+
+          <NavPageBtn onClick={() => goPage(1)} disabled={page === total - 1}>
+            <IcoChevRight2 />
+          </NavPageBtn>
+
+          {/* Page counter */}
+          <div style={{
+            position: 'absolute',
+            right: 20,
+            fontSize: 12,
+            color: C.muted,
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+            display: isMobile ? 'none' : 'block',
+          }}>
+            Page {page + 1} of {total}
           </div>
         </div>
 
-        {/* ── Info strip ── */}
+        {/* ── 4. Info strip ── */}
         <div style={{
           background: C.pageBg,
           borderTop: `1px solid ${C.border}`,
           borderBottom: `1px solid ${C.border}`,
-          padding: isMobile ? '10px 16px' : '10px 22px',
+          padding: isMobile ? '9px 14px' : '10px 20px',
           display: 'flex',
           alignItems: 'center',
-          gap: isMobile ? 12 : 24,
+          gap: isMobile ? 16 : 28,
           flexShrink: 0,
           flexWrap: 'wrap',
         }}>
           {(isMobile
-            ? [{ label: 'Format', val: 'DOCX / PDF' }, { label: 'Jurisdiction', val: 'India' }]
+            ? [{ label: 'FORMAT', val: 'DOCX / PDF' }, { label: 'JURISDICTION', val: 'India' }]
             : [
-                { label: 'Format',       val: 'DOCX / PDF' },
-                { label: 'Language',     val: 'English' },
-                { label: 'Jurisdiction', val: 'India' },
-                { label: 'Last Updated', val: 'Jan 2025' },
+                { label: 'FORMAT',       val: 'DOCX / PDF' },
+                { label: 'LANGUAGE',     val: 'English' },
+                { label: 'JURISDICTION', val: 'India' },
+                { label: 'LAST UPDATED', val: 'Jan 2025' },
               ]
           ).map(({ label, val }) => (
-            <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ fontSize: 11, color: C.muted }}>{label}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{val}</span>
+            <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{
+                fontSize: 10, textTransform: 'uppercase',
+                letterSpacing: 0.4, color: C.muted,
+              }}>{label}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{val}</span>
             </div>
           ))}
-          <div style={{ flex: 1 }} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{
-              background: '#DCFCE7',
-              color: '#16A34A',
-              fontSize: 11,
-              fontWeight: 700,
-              borderRadius: 20,
-              padding: '2px 10px',
-            }}>Free</span>
-            {!isMobile && (
-              <span style={{ fontSize: 12, color: C.muted }}>Instant download</span>
-            )}
-          </div>
         </div>
 
-        {/* ── Footer ── */}
+        {/* ── 5. Footer ── */}
         <div style={{
-          padding: isMobile ? '12px 16px' : '14px 22px',
+          padding: isMobile ? '12px 14px' : '13px 20px',
           display: 'flex',
           justifyContent: isMobile ? 'stretch' : 'flex-end',
-          gap: 10,
           flexShrink: 0,
         }}>
-          <UseTemplateButton isMobile={isMobile} />
-          <DownloadButton isMobile={isMobile} />
+          <DownloadBtn isMobile={isMobile} />
         </div>
+
       </div>
     </div>
+  );
+}
+
+/* ── Auxiliary button components ─────────────────────────────────────── */
+
+function PanToggleBtn({ active, onClick, isMobile }) {
+  const [h, setH] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
+      style={{
+        height: 30, padding: '0 10px', borderRadius: 8,
+        border: `1px solid ${active ? C.red : C.border}`,
+        background: active ? C.redLight : 'transparent',
+        color: active ? C.red : h ? C.text : C.muted,
+        fontSize: 11, fontWeight: 600, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 5,
+        outline: 'none', transition: 'all 0.15s', fontFamily: 'inherit',
+        whiteSpace: 'nowrap', flexShrink: 0,
+      }}
+    >
+      <IcoPan active={active} />
+      {!isMobile && 'Pan'}
+    </button>
+  );
+}
+
+function CloseBtn({ onClose }) {
+  const [h, setH] = useState(false);
+  return (
+    <button
+      onClick={onClose}
+      onMouseEnter={() => setH(true)}
+      onMouseLeave={() => setH(false)}
+      style={{
+        width: 30, height: 30, borderRadius: 8,
+        border: `1px solid ${C.border}`,
+        background: h ? C.subtle : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', padding: 0, outline: 'none',
+        transition: 'background 0.15s', flexShrink: 0,
+      }}
+    >
+      <IcoClose c={C.muted} s={14} />
+    </button>
   );
 }
