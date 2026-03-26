@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { C } from '../constants/colors';
+import { THEMES } from '../constants/data';
 import Breadcrumb from '../components/Breadcrumb';
 import DocCard from '../components/DocCard';
 import Footer from '../components/Footer';
@@ -11,6 +12,9 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
   const [sort, setSort]                   = useState('latest');
   const [searchFocused, setSearchFocused] = useState(false);
   const { isMobile, isTablet }            = useBreakpoint();
+
+  const th = THEMES[cat.id];
+  const px = isMobile ? 16 : 32;
 
   const filtered = useMemo(() => {
     let docs = [...cat.docs];
@@ -25,131 +29,138 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
     return docs;
   }, [cat.docs, search, sort]);
 
-  const px = isMobile ? 16 : 32;
-
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: `24px ${px}px` }}>
-      <Breadcrumb items={[
-        { label: 'More Services' },
-        { label: 'Legal Templates', onClick: onBack },
-        { label: cat.name },
-      ]} />
+      <Breadcrumb
+        items={[
+          { label: 'Legal Templates', onClick: onBack },
+          { label: cat.name },
+        ]}
+        accentColor={th.accent}
+      />
 
-      {/* Page header card */}
+      {/* Page header card — themed */}
       <div style={{
-        background: C.cardBg,
+        background: th.light,
+        border: `1px solid ${th.accent}40`,
         borderRadius: 14,
-        padding: isMobile ? '16px' : '20px 24px',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 14,
         marginBottom: 20,
+        overflow: 'hidden',
+        boxShadow: `0 1px 6px ${th.accent}18`,
       }}>
-        {/* Category identity */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
-          <div style={{
-            width: 48,
-            height: 48,
-            borderRadius: 12,
-            background: cat.bg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 24,
-            flexShrink: 0,
-          }}>
-            {cat.icon}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{
-              fontSize: isMobile ? 16 : 20,
-              fontWeight: 700,
-              color: C.text,
-              lineHeight: 1.2,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: isMobile ? 'normal' : 'nowrap',
-            }}>
-              {cat.name}
-            </div>
-            <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>
-              {cat.docs.length} templates in this category
-            </div>
-          </div>
-        </div>
+        {/* Gradient accent stripe */}
+        <div style={{ height: 5, background: th.grad }} />
 
-        {/* Controls */}
+        {/* Content row */}
         <div style={{
+          padding: isMobile ? '14px 16px' : '18px 24px',
           display: 'flex',
           alignItems: 'center',
-          gap: 8,
-          flexShrink: 0,
-          width: isMobile ? '100%' : 'auto',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 14,
         }}>
-          {/* Search */}
+          {/* Left: icon + name + count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              background: `${th.accent}18`,
+              border: `1.5px solid ${th.accent}22`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 24,
+              flexShrink: 0,
+            }}>
+              {cat.icon}
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontSize: isMobile ? 16 : 20,
+                fontWeight: 700,
+                color: C.text,
+                lineHeight: 1.2,
+              }}>
+                {cat.name}
+              </div>
+              <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>
+                {cat.docs.length} templates in this category
+              </div>
+            </div>
+          </div>
+
+          {/* Right: search + sort */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 7,
-            flex: isMobile ? 1 : 'none',
-            width: isMobile ? undefined : 190,
-            height: 36,
-            borderRadius: 10,
-            background: C.pageBg,
-            border: `1px solid ${searchFocused ? C.red : C.border}`,
-            padding: '0 10px',
-            transition: 'border 0.18s',
-            minWidth: 0,
+            gap: 8,
+            flexShrink: 0,
+            width: isMobile ? '100%' : 'auto',
           }}>
-            <IcoSearch c={C.muted} s={13} />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              placeholder="Search templates..."
+            {/* Search */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 7,
+              flex: isMobile ? 1 : 'none',
+              width: isMobile ? undefined : 190,
+              height: 36,
+              borderRadius: 10,
+              background: C.pageBg,
+              border: `1px solid ${searchFocused ? th.accent : C.border}`,
+              padding: '0 10px',
+              transition: 'border 0.18s',
+              minWidth: 0,
+            }}>
+              <IcoSearch c={searchFocused ? th.accent : C.muted} s={13} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search templates..."
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  fontSize: 13,
+                  color: C.text,
+                  fontFamily: 'inherit',
+                  minWidth: 0,
+                }}
+              />
+            </div>
+
+            {/* Sort */}
+            <select
+              value={sort}
+              onChange={e => setSort(e.target.value)}
               style={{
-                flex: 1,
-                border: 'none',
-                background: 'transparent',
-                outline: 'none',
+                height: 36,
+                borderRadius: 8,
+                border: `1px solid ${C.border}`,
+                background: C.cardBg,
                 fontSize: 13,
                 color: C.text,
+                padding: '0 8px',
+                outline: 'none',
+                cursor: 'pointer',
                 fontFamily: 'inherit',
-                minWidth: 0,
+                flexShrink: 0,
               }}
-            />
+            >
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+              <option value="az">A–Z</option>
+            </select>
           </div>
-
-          {/* Sort */}
-          <select
-            value={sort}
-            onChange={e => setSort(e.target.value)}
-            style={{
-              height: 36,
-              borderRadius: 8,
-              border: `1px solid ${C.border}`,
-              background: C.cardBg,
-              fontSize: 13,
-              color: C.text,
-              padding: '0 8px',
-              outline: 'none',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              flexShrink: 0,
-            }}
-          >
-            <option value="latest">Latest</option>
-            <option value="oldest">Oldest</option>
-            <option value="az">A–Z</option>
-          </select>
         </div>
       </div>
 
-      {/* Results count (search active only) */}
+      {/* Results count */}
       {search.trim() && (
         <div style={{ fontSize: 13, color: C.muted, marginBottom: 14 }}>
           {filtered.length} results for{' '}
@@ -160,9 +171,9 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
       {/* Grid or empty state */}
       {filtered.length === 0 ? (
         <div style={{
-          background: C.cardBg,
+          background: th.light,
           borderRadius: 14,
-          border: `1px solid ${C.border}`,
+          border: `1px solid ${th.accent}30`,
           padding: '56px 24px',
           textAlign: 'center',
         }}>
@@ -188,7 +199,7 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
             <DocCard
               key={name}
               name={name}
-              catBg={cat.bg}
+              theme={th}
               onClick={() => onOpenDoc(name)}
             />
           ))}

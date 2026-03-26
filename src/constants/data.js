@@ -3,12 +3,26 @@ export const NAV_ITEMS = [
   "Office Supplies", "Softwares", "Logistics", "Gift Cards",
   "Marketplace", "Tax & More", "Accounting", "Invoicing",
   "Insurance", "Corporate Cards", "Hub", "WhatsApp for Business",
-  "Co Founder", "More Services",
+  "Co Founder", "Legal Repository",
 ];
 
 export const FOOTER_LINKS = [
   "Peko Platform Agreement", "Privacy Policy", "Refund Policy", "Cookie Policy",
 ];
+
+export const THEMES = {
+  general:    { grad: "linear-gradient(135deg,#4F8EF7,#1A5FD4)",  light: "#EEF4FF", accent: "#1A5FD4", muted: "#5B8FE8"  },
+  corporate:  { grad: "linear-gradient(135deg,#9B6FE8,#5E35B1)",  light: "#F3EEFF", accent: "#5E35B1", muted: "#8B60D6"  },
+  employment: { grad: "linear-gradient(135deg,#34C97B,#1A8A4A)",  light: "#EDFBF3", accent: "#1A8A4A", muted: "#2EB56A"  },
+  realestate: { grad: "linear-gradient(135deg,#F5A623,#C97A0A)",  light: "#FFF8EC", accent: "#C97A0A", muted: "#E09520"  },
+  litigation: { grad: "linear-gradient(135deg,#F76B6B,#C62828)",  light: "#FFF0F0", accent: "#C62828", muted: "#E85555"  },
+  family:     { grad: "linear-gradient(135deg,#E07BE0,#9C27B0)",  light: "#FDF0FF", accent: "#9C27B0", muted: "#C560C5"  },
+  banking:    { grad: "linear-gradient(135deg,#26C6DA,#00838F)",  light: "#E8FDFF", accent: "#00838F", muted: "#1AB5C4"  },
+  ip:         { grad: "linear-gradient(135deg,#FFD54F,#F9A825)",  light: "#FFFAEC", accent: "#B8860B", muted: "#D4A017"  },
+  ecommerce:  { grad: "linear-gradient(135deg,#4DD0E1,#0277BD)",  light: "#EAF7FF", accent: "#0277BD", muted: "#2196B0"  },
+  notices:    { grad: "linear-gradient(135deg,#FF8A65,#E64A19)",  light: "#FFF3EE", accent: "#E64A19", muted: "#F07050"  },
+  misc:       { grad: "linear-gradient(135deg,#90A4AE,#455A64)",  light: "#F0F4F5", accent: "#455A64", muted: "#708090"  },
+};
 
 export const CATEGORIES = [
   {

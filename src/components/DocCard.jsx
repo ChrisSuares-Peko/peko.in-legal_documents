@@ -1,135 +1,124 @@
-import React, { useState } from 'react';
-import { C } from '../constants/colors';
+import { useState } from 'react';
 import { IcoDownload } from './Icons';
 
-function DocSvgIcon({ hovered }) {
-  const stroke    = hovered ? '#E83838' : '#CCCCCC';
-  const foldFill  = hovered ? 'rgba(232,56,56,0.06)' : '#EBEBEB';
-  const lineColor = hovered ? '#E83838' : '#CCCCCC';
+export default function DocCard({ name, theme: th, onClick }) {
+  const [hov, setHov] = useState(false);
 
-  return (
-    <svg
-      width="38"
-      height="46"
-      viewBox="0 0 38 46"
-      fill="none"
-      style={{ opacity: hovered ? 1 : 0.45, transition: 'opacity 0.18s' }}
-    >
-      <path
-        d="M4 0 H26 L36 10 V44 A2 2 0 0 1 34 46 H4 A2 2 0 0 1 2 44 V2 A2 2 0 0 1 4 0Z"
-        fill="white"
-        stroke={stroke}
-        strokeWidth="1.5"
-      />
-      <path
-        d="M26 0 L26 10 L36 10"
-        fill={foldFill}
-        stroke={stroke}
-        strokeWidth="1.5"
-      />
-      <rect x="7" y="18" width="18" height="2" rx="1" fill={lineColor} />
-      <rect x="7" y="23" width="18" height="2" rx="1" fill={lineColor} />
-      <rect x="7" y="28" width="18" height="2" rx="1" fill={lineColor} />
-      <rect x="7" y="33" width="12" height="2" rx="1" fill={lineColor} />
-    </svg>
-  );
-}
-
-export default function DocCard({ name, catBg, onClick }) {
-  const [hovered,   setHovered]   = useState(false);
-  const [dlHovered, setDlHovered] = useState(false);
+  const thumbBg  = hov ? `${th.accent}28` : `${th.accent}14`;
+  const cardBdr  = hov ? th.accent        : `${th.accent}50`;
+  const cardShdw = hov
+    ? `0 6px 24px ${th.accent}30`
+    : `0 1px 6px ${th.accent}18`;
 
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        background: C.cardBg,
+        background: th.light,
+        border: `1.5px solid ${cardBdr}`,
         borderRadius: 14,
-        border: `1.5px solid ${hovered ? C.red : C.border}`,
-        boxShadow: hovered
-          ? '0 4px 20px rgba(232,56,56,0.10)'
-          : '0 1px 4px rgba(0,0,0,0.04)',
-        cursor: 'pointer',
         overflow: 'hidden',
+        cursor: 'pointer',
+        boxShadow: cardShdw,
         transition: 'all 0.18s',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
       {/* Thumbnail */}
-      <div style={{
-        height: 130,
-        background: hovered ? catBg : '#F3F4F6',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-        transition: 'background 0.18s',
-        borderBottom: `1px solid ${hovered ? 'rgba(232,56,56,0.15)' : C.border}`,
-      }}>
-        <DocSvgIcon hovered={hovered} />
-        <div style={{
-          background: hovered ? C.red : C.text,
-          color: '#fff',
-          fontSize: 9,
-          fontWeight: 700,
-          borderRadius: 4,
-          padding: '2px 7px',
-          letterSpacing: 0.5,
-          textTransform: 'uppercase',
+      <div
+        onClick={onClick}
+        style={{
+          height: 120,
+          background: thumbBg,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
           transition: 'background 0.18s',
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width="38" height="46" viewBox="0 0 38 46" fill="none"
+          style={{ opacity: hov ? 1 : 0.55, transition: 'opacity 0.18s' }}
+        >
+          <rect x="1" y="1" width="36" height="44" rx="5" fill="white" stroke={th.accent} strokeWidth="1.5" />
+          <path d="M24 1v11h12" stroke={th.accent} strokeWidth="1.5" fill="none" />
+          <rect x="7"  y="18" width="14" height="2" rx="1" fill={th.accent} opacity={hov ? 1 : 0.5} />
+          <rect x="7"  y="23" width="22" height="2" rx="1" fill={th.accent} opacity={hov ? 1 : 0.5} />
+          <rect x="7"  y="28" width="18" height="2" rx="1" fill={th.accent} opacity={hov ? 1 : 0.5} />
+          <rect x="7"  y="33" width="10" height="2" rx="1" fill={th.accent} opacity={hov ? 1 : 0.5} />
+        </svg>
+        <div style={{
+          background: th.accent,
+          color: '#fff',
+          fontSize: 10,
+          fontWeight: 700,
+          padding: '3px 10px',
+          borderRadius: 4,
+          letterSpacing: 0.6,
+          opacity: hov ? 1 : 0.75,
+          transition: 'opacity 0.18s',
         }}>
           DOC
         </div>
       </div>
 
-      {/* Name + download */}
+      {/* Divider */}
+      <div style={{ height: 1, background: `${th.accent}25` }} />
+
+      {/* Footer */}
       <div style={{
+        padding: '12px 14px',
         display: 'flex',
-        alignItems: 'center',
-        padding: '10px 12px',
-        gap: 6,
-        minHeight: 52,
+        alignItems: 'flex-start',
+        gap: 8,
+        flex: 1,
+        background: hov ? `${th.accent}10` : 'transparent',
+        transition: 'background 0.18s',
       }}>
-        <div style={{
-          flex: 1,
-          fontSize: 13,
-          fontWeight: 500,
-          color: C.text,
-          lineHeight: 1.35,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-          minWidth: 0,
-        }}>
+        <span
+          onClick={onClick}
+          style={{
+            flex: 1,
+            fontSize: 13,
+            fontWeight: 500,
+            color: '#1A1A1A',
+            lineHeight: 1.45,
+          }}
+        >
           {name}
-        </div>
+        </span>
         <button
           onClick={e => e.stopPropagation()}
-          onMouseEnter={() => setDlHovered(true)}
-          onMouseLeave={() => setDlHovered(false)}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = `${th.accent}20`;
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
           style={{
             width: 28,
             height: 28,
             borderRadius: 7,
-            border: 'none',
-            background: dlHovered ? C.redLight : 'transparent',
+            flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            flexShrink: 0,
-            transition: 'all 0.18s',
-            transform: dlHovered ? 'scale(1.1)' : 'scale(1)',
-            outline: 'none',
+            border: 'none',
+            background: 'transparent',
+            transition: 'all 0.15s',
             padding: 0,
+            outline: 'none',
           }}
         >
-          <IcoDownload c={dlHovered ? C.red : C.muted} s={14} />
+          <IcoDownload c={th.accent} s={14} />
         </button>
       </div>
     </div>

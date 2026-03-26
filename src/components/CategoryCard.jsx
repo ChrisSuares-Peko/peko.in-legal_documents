@@ -1,91 +1,124 @@
 import React, { useState } from 'react';
-import { C } from '../constants/colors';
+import { THEMES } from '../constants/data';
 
 export default function CategoryCard({ cat, onClick }) {
-  const [hovered, setHovered] = useState(false);
+  const [hov, setHov] = useState(false);
+  const th = THEMES[cat.id];
+
+  const bandBg   = hov ? `${th.accent}28` : th.light;
+  const cardBdr  = hov ? th.accent        : `${th.accent}55`;
+  const cardShdw = hov
+    ? `0 6px 24px ${th.accent}30`
+    : `0 1px 6px ${th.accent}18`;
 
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
       style={{
-        background: C.cardBg,
+        background: th.light,
+        border: `1.5px solid ${cardBdr}`,
         borderRadius: 14,
-        border: `1.5px solid ${hovered ? C.red : C.border}`,
-        boxShadow: hovered
-          ? '0 4px 20px rgba(232,56,56,0.10)'
-          : '0 1px 4px rgba(0,0,0,0.04)',
-        cursor: 'pointer',
         overflow: 'hidden',
+        cursor: 'pointer',
+        boxShadow: cardShdw,
         transition: 'all 0.18s',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {/* Colored band */}
+      {/* Top band */}
       <div style={{
-        height: 72,
-        background: hovered ? cat.bg : '#F3F4F6',
+        height: 76,
+        background: bandBg,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 16px',
+        padding: '0 18px',
         transition: 'background 0.18s',
-        borderBottom: `1px solid ${hovered ? 'rgba(232,56,56,0.15)' : C.border}`,
+        position: 'relative',
+        overflow: 'hidden',
       }}>
-        <span style={{
+        {/* Gradient orb */}
+        <div style={{
+          position: 'absolute',
+          right: -8,
+          top: -8,
+          width: 72,
+          height: 72,
+          borderRadius: '50%',
+          background: th.grad,
+          opacity: hov ? 0.18 : 0.10,
+          transition: 'opacity 0.18s',
+        }} />
+        {/* Emoji */}
+        <div style={{
           fontSize: 28,
-          display: 'inline-block',
+          lineHeight: 1,
+          zIndex: 1,
           transition: 'transform 0.18s',
-          transform: hovered ? 'scale(1.12)' : 'scale(1)',
+          transform: hov ? 'scale(1.12)' : 'scale(1)',
         }}>
           {cat.icon}
-        </span>
+        </div>
+        {/* Count badge */}
         <div style={{
-          background: hovered ? C.red : C.text,
+          background: th.accent,
           color: '#fff',
           fontSize: 11,
           fontWeight: 700,
+          padding: '3px 9px',
           borderRadius: 20,
-          padding: '3px 8px',
-          transition: 'background 0.18s',
+          zIndex: 1,
         }}>
           {cat.docs.length}
         </div>
       </div>
 
+      {/* Divider */}
+      <div style={{ height: 1, background: `${th.accent}25`, transition: 'background 0.18s' }} />
+
       {/* Body */}
-      <div style={{ padding: '14px 16px' }}>
-        <div style={{
-          fontSize: 14,
-          fontWeight: 700,
-          color: C.text,
-          lineHeight: 1.3,
-          marginBottom: 8,
-        }}>
+      <div style={{
+        padding: '14px 18px 16px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: 10,
+        background: hov ? `${th.accent}10` : 'transparent',
+        transition: 'background 0.18s',
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.35 }}>
           {cat.name}
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <span style={{ fontSize: 12, color: C.muted }}>{cat.docs.length} Templates</span>
-          <span style={{
-            fontSize: 12,
-            color: hovered ? C.red : C.muted,
-            fontWeight: 500,
-            transition: 'color 0.18s',
-            display: 'inline-flex',
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 12, color: th.accent, fontWeight: 600, opacity: 0.8 }}>
+            {cat.docs.length} Templates
+          </div>
+          <div style={{
+            display: 'flex',
             alignItems: 'center',
-            gap: 2,
+            gap: 4,
+            fontSize: 12,
+            fontWeight: 600,
+            color: th.accent,
           }}>
             View all
-            <span style={{
-              display: 'inline-block',
-              transition: 'transform 0.18s',
-              transform: hovered ? 'translateX(2px)' : 'translateX(0)',
-            }}>→</span>
-          </span>
+            <svg
+              width="11" height="11" fill="none"
+              stroke="currentColor" strokeWidth="2.2"
+              viewBox="0 0 24 24"
+              style={{
+                transition: 'transform 0.18s',
+                transform: hov ? 'translateX(3px)' : 'translateX(0)',
+              }}
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>

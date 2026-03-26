@@ -11,23 +11,28 @@ const total        = CATEGORIES.reduce((s, c) => s + c.docs.length, 0);
 const mostTemplates = Math.max(...CATEGORIES.map(c => c.docs.length));
 
 const STATS = [
-  { emoji: '🗂️', label: 'Total Categories', val: CATEGORIES.length },
-  { emoji: '📄', label: 'Total Templates',  val: total },
-  { emoji: '📊', label: 'Most Templates',   val: mostTemplates },
-  { emoji: '✨', label: 'Newly Added',      val: 12 },
+  { label: 'Total Categories', val: CATEGORIES.length,  emoji: '🗂️', bg: '#EEF4FF', tc: '#1A5FD4' },
+  { label: 'Total Templates',  val: total,               emoji: '📄', bg: '#EDFBF3', tc: '#1A8A4A' },
+  { label: 'Most Templates',   val: mostTemplates,       emoji: '📊', bg: '#FFF8EC', tc: '#C97A0A' },
+  { label: 'Newly Added',      val: 12,                  emoji: '✨', bg: '#F3EEFF', tc: '#5E35B1' },
 ];
 
-function StatCard({ stat }) {
+function StatCard({ stat: s }) {
   return (
     <div style={{
-      background: C.cardBg,
+      background: s.bg,
+      border: '1px solid #EBEBEB',
       borderRadius: 12,
       padding: '14px 18px',
-      boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
     }}>
-      <div style={{ fontSize: 22, marginBottom: 6 }}>{stat.emoji}</div>
-      <div style={{ fontSize: 20, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{stat.val}</div>
-      <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{stat.label}</div>
+      <div style={{ fontSize: 22, lineHeight: 1 }}>{s.emoji}</div>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 700, color: s.tc, lineHeight: 1 }}>{s.val}</div>
+        <div style={{ fontSize: 12, color: '#8A8A8A', marginTop: 3 }}>{s.label}</div>
+      </div>
     </div>
   );
 }
@@ -46,7 +51,8 @@ export default function CategoriesPage({ onOpen }) {
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: `24px ${px}px` }}>
-      <Breadcrumb items={[{ label: 'More Services' }, { label: 'Legal Templates' }]} />
+      {/* Single-item breadcrumb */}
+      <Breadcrumb items={[{ label: 'Legal Templates' }]} />
 
       {/* Hero card */}
       <div style={{

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { C } from '../constants/colors';
 import { IcoClose, IcoDownload } from './Icons';
 import DocPreviewPage from './DocPreviewPage';
-import { DOC_PAGES } from '../constants/data';
+import { DOC_PAGES, THEMES } from '../constants/data';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
 /* ── Inline icons ────────────────────────────────────────────────────── */
@@ -27,15 +27,12 @@ const IcoChevRight2 = () => (
   </svg>
 );
 
-/* ── Small reusable button atoms ─────────────────────────────────────── */
+/* ── Button atoms ────────────────────────────────────────────────────── */
 
 function ZoomStepBtn({ onClick, children }) {
   const [h, setH] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
+    <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{
         width: 30, height: 30, border: 'none',
         background: h ? C.subtle : 'transparent',
@@ -51,10 +48,7 @@ function ZoomStepBtn({ onClick, children }) {
 function ResetBtn({ onClick }) {
   const [h, setH] = useState(false);
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
+    <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{
         height: 30, padding: '0 10px', borderRadius: 8,
         border: `1px solid ${h ? C.red : C.border}`,
@@ -67,41 +61,73 @@ function ResetBtn({ onClick }) {
   );
 }
 
+function PanToggleBtn({ active, onClick, isMobile }) {
+  const [h, setH] = useState(false);
+  return (
+    <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+      style={{
+        height: 30, padding: '0 10px', borderRadius: 8,
+        border: `1px solid ${active ? C.red : C.border}`,
+        background: active ? C.redLight : 'transparent',
+        color: active ? C.red : h ? C.text : C.muted,
+        fontSize: 11, fontWeight: 600, cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 5,
+        outline: 'none', transition: 'all 0.15s', fontFamily: 'inherit',
+        whiteSpace: 'nowrap', flexShrink: 0,
+      }}
+    >
+      <IcoPan active={active} />
+      {!isMobile && 'Pan'}
+    </button>
+  );
+}
+
 function NavPageBtn({ onClick, disabled, children }) {
   const [h, setH] = useState(false);
   const active = !disabled && h;
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
+    <button onClick={onClick} disabled={disabled}
+      onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{
         width: 28, height: 28, borderRadius: 7,
         border: `1px solid ${active ? C.red : C.border}`,
-        background: 'transparent',
-        color: active ? C.red : C.muted,
+        background: 'transparent', color: active ? C.red : C.muted,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled ? 0.3 : 1,
-        transition: 'all 0.18s', outline: 'none', padding: 0,
-        flexShrink: 0,
+        transition: 'all 0.18s', outline: 'none', padding: 0, flexShrink: 0,
       }}
     >{children}</button>
   );
 }
 
-function DownloadBtn({ isMobile }) {
+function CloseBtn({ onClose }) {
   const [h, setH] = useState(false);
   return (
-    <button
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
+    <button onClick={onClose} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+      style={{
+        width: 30, height: 30, borderRadius: 8,
+        border: `1px solid ${C.border}`,
+        background: h ? C.subtle : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', padding: 0, outline: 'none',
+        transition: 'background 0.15s', flexShrink: 0,
+      }}
+    >
+      <IcoClose c={C.muted} s={14} />
+    </button>
+  );
+}
+
+function DownloadBtn({ isMobile, grad }) {
+  const [h, setH] = useState(false);
+  return (
+    <button onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{
         padding: isMobile ? '9px 20px' : '10px 24px',
         borderRadius: 10, border: 'none',
-        background: C.redGrad,
-        boxShadow: '0 2px 8px rgba(200,40,40,0.25)',
+        background: grad,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.20)',
         color: '#fff', fontSize: 14, fontWeight: 700,
         cursor: 'pointer', display: 'flex', alignItems: 'center',
         gap: 7, opacity: h ? 0.88 : 1,
@@ -120,6 +146,7 @@ function DownloadBtn({ isMobile }) {
 
 export default function PreviewModal({ docName, cat, onClose }) {
   const { isMobile } = useBreakpoint();
+  const th    = THEMES[cat.id];
   const total = DOC_PAGES.length;
 
   const [zoom,      setZoom]      = useState(100);
@@ -130,18 +157,15 @@ export default function PreviewModal({ docName, cat, onClose }) {
 
   const panStartRef = useRef(null);
 
-  // Reset everything when a new doc is opened
   useEffect(() => {
     setPage(0); setPan({ x: 0, y: 0 }); setZoom(isMobile ? 60 : 100);
     setPanMode(false);
   }, [docName]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Adjust zoom when viewport size changes
   useEffect(() => {
     setZoom(z => isMobile ? Math.min(z, 70) : z);
   }, [isMobile]);
 
-  // Escape key
   useEffect(() => {
     const h = e => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', h);
@@ -149,13 +173,8 @@ export default function PreviewModal({ docName, cat, onClose }) {
   }, [onClose]);
 
   const handleReset = () => { setZoom(100); setPan({ x: 0, y: 0 }); };
-
-  const goPage = dir => {
-    setPage(p => Math.min(total - 1, Math.max(0, p + dir)));
-    setPan({ x: 0, y: 0 });
-  };
-
-  const goToPage = i => { setPage(i); setPan({ x: 0, y: 0 }); };
+  const goPage  = dir => { setPage(p => Math.min(total - 1, Math.max(0, p + dir))); setPan({ x: 0, y: 0 }); };
+  const goToPage = i  => { setPage(i); setPan({ x: 0, y: 0 }); };
 
   const onMD = e => {
     if (!panMode) return;
@@ -195,7 +214,6 @@ export default function PreviewModal({ docName, cat, onClose }) {
           overflow: 'hidden',
         }}
       >
-
         {/* ── 1. Header ── */}
         <div style={{
           display: 'flex', alignItems: 'center',
@@ -203,7 +221,6 @@ export default function PreviewModal({ docName, cat, onClose }) {
           borderBottom: `1px solid ${C.border}`,
           flexShrink: 0, gap: 10, flexWrap: 'wrap',
         }}>
-          {/* Doc identity */}
           <div style={{
             width: 32, height: 32, borderRadius: 8,
             background: cat.bg, display: 'flex', alignItems: 'center',
@@ -223,14 +240,9 @@ export default function PreviewModal({ docName, cat, onClose }) {
             )}
           </div>
 
-          {/* Controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            {/* Pan toggle */}
             <PanToggleBtn active={panMode} onClick={() => setPanMode(v => !v)} isMobile={isMobile} />
-
             <div style={{ width: 1, height: 20, background: C.border }} />
-
-            {/* Zoom group */}
             <div style={{
               display: 'inline-flex', alignItems: 'center',
               border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden',
@@ -244,22 +256,15 @@ export default function PreviewModal({ docName, cat, onClose }) {
               }}>{zoom}%</div>
               <ZoomStepBtn onClick={() => setZoom(z => Math.min(200, z + 10))}>+</ZoomStepBtn>
             </div>
-
             {!isMobile && <ResetBtn onClick={handleReset} />}
-
             <div style={{ width: 1, height: 20, background: C.border }} />
-
-            {/* Close */}
             <CloseBtn onClose={onClose} />
           </div>
         </div>
 
         {/* ── 2. A4 Viewport ── */}
         <div
-          onMouseDown={onMD}
-          onMouseMove={onMM}
-          onMouseUp={onMU}
-          onMouseLeave={onMU}
+          onMouseDown={onMD} onMouseMove={onMM} onMouseUp={onMU} onMouseLeave={onMU}
           style={{
             flex: 1,
             overflow: panMode ? 'hidden' : 'auto',
@@ -291,36 +296,26 @@ export default function PreviewModal({ docName, cat, onClose }) {
 
         {/* ── 3. Pagination strip ── */}
         <div style={{
-          height: 46,
-          flexShrink: 0,
+          height: 46, flexShrink: 0,
           background: '#FFFFFF',
           borderTop: `1px solid ${C.border}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 10,
-          position: 'relative',
-          padding: '0 20px',
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: 10,
+          position: 'relative', padding: '0 20px',
         }}>
           <NavPageBtn onClick={() => goPage(-1)} disabled={page === 0}>
             <IcoChevLeft />
           </NavPageBtn>
 
-          {/* Dot indicators */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {DOC_PAGES.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => goToPage(i)}
-                style={{
-                  width: i === page ? 22 : 8,
-                  height: 8,
-                  borderRadius: 20,
-                  background: i === page ? C.red : '#CECECE',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              />
+              <div key={i} onClick={() => goToPage(i)} style={{
+                width: i === page ? 22 : 8,
+                height: 8, borderRadius: 20,
+                background: i === page ? th.accent : '#CECECE',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }} />
             ))}
           </div>
 
@@ -328,18 +323,15 @@ export default function PreviewModal({ docName, cat, onClose }) {
             <IcoChevRight2 />
           </NavPageBtn>
 
-          {/* Page counter */}
-          <div style={{
-            position: 'absolute',
-            right: 20,
-            fontSize: 12,
-            color: C.muted,
-            fontWeight: 500,
-            whiteSpace: 'nowrap',
-            display: isMobile ? 'none' : 'block',
-          }}>
-            Page {page + 1} of {total}
-          </div>
+          {!isMobile && (
+            <div style={{
+              position: 'absolute', right: 20,
+              fontSize: 12, color: C.muted,
+              fontWeight: 500, whiteSpace: 'nowrap',
+            }}>
+              Page {page + 1} of {total}
+            </div>
+          )}
         </div>
 
         {/* ── 4. Info strip ── */}
@@ -348,11 +340,9 @@ export default function PreviewModal({ docName, cat, onClose }) {
           borderTop: `1px solid ${C.border}`,
           borderBottom: `1px solid ${C.border}`,
           padding: isMobile ? '9px 14px' : '10px 20px',
-          display: 'flex',
-          alignItems: 'center',
+          display: 'flex', alignItems: 'center',
           gap: isMobile ? 16 : 28,
-          flexShrink: 0,
-          flexWrap: 'wrap',
+          flexShrink: 0, flexWrap: 'wrap',
         }}>
           {(isMobile
             ? [{ label: 'FORMAT', val: 'DOCX / PDF' }, { label: 'JURISDICTION', val: 'India' }]
@@ -364,10 +354,7 @@ export default function PreviewModal({ docName, cat, onClose }) {
               ]
           ).map(({ label, val }) => (
             <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{
-                fontSize: 10, textTransform: 'uppercase',
-                letterSpacing: 0.4, color: C.muted,
-              }}>{label}</span>
+              <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.4, color: C.muted }}>{label}</span>
               <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{val}</span>
             </div>
           ))}
@@ -380,57 +367,9 @@ export default function PreviewModal({ docName, cat, onClose }) {
           justifyContent: isMobile ? 'stretch' : 'flex-end',
           flexShrink: 0,
         }}>
-          <DownloadBtn isMobile={isMobile} />
+          <DownloadBtn isMobile={isMobile} grad={th.grad} />
         </div>
-
       </div>
     </div>
-  );
-}
-
-/* ── Auxiliary button components ─────────────────────────────────────── */
-
-function PanToggleBtn({ active, onClick, isMobile }) {
-  const [h, setH] = useState(false);
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
-      style={{
-        height: 30, padding: '0 10px', borderRadius: 8,
-        border: `1px solid ${active ? C.red : C.border}`,
-        background: active ? C.redLight : 'transparent',
-        color: active ? C.red : h ? C.text : C.muted,
-        fontSize: 11, fontWeight: 600, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 5,
-        outline: 'none', transition: 'all 0.15s', fontFamily: 'inherit',
-        whiteSpace: 'nowrap', flexShrink: 0,
-      }}
-    >
-      <IcoPan active={active} />
-      {!isMobile && 'Pan'}
-    </button>
-  );
-}
-
-function CloseBtn({ onClose }) {
-  const [h, setH] = useState(false);
-  return (
-    <button
-      onClick={onClose}
-      onMouseEnter={() => setH(true)}
-      onMouseLeave={() => setH(false)}
-      style={{
-        width: 30, height: 30, borderRadius: 8,
-        border: `1px solid ${C.border}`,
-        background: h ? C.subtle : 'transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', padding: 0, outline: 'none',
-        transition: 'background 0.15s', flexShrink: 0,
-      }}
-    >
-      <IcoClose c={C.muted} s={14} />
-    </button>
   );
 }

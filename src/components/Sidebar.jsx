@@ -3,7 +3,7 @@ import { C } from '../constants/colors';
 import { NAV_ITEMS } from '../constants/data';
 import { IcoClose } from './Icons';
 
-const ACTIVE_ITEM = 'More Services';
+const ACTIVE_ITEM = 'Legal Repository';
 
 function NavItem({ label, onClose, isMobile }) {
   const [hovered, setHovered] = useState(false);
@@ -52,7 +52,6 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
       flexDirection: 'column',
       overflow: 'hidden',
       flexShrink: 0,
-      /* Mobile: fixed overlay that slides in from left */
       ...(isMobile ? {
         position: 'fixed',
         top: 0,
@@ -65,7 +64,7 @@ export default function Sidebar({ isMobile, isOpen, onClose }) {
         position: 'relative',
       }),
     }}>
-      {/* Logo row — with close button on mobile */}
+      {/* Logo row */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
