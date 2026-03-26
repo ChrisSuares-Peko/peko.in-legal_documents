@@ -1,16 +1,50 @@
 import React, { useState } from 'react';
 import { C } from '../constants/colors';
 import { NAV_ITEMS } from '../constants/data';
+import { IcoClose } from './Icons';
 
-const ACTIVE_ITEM = "More Services";
+const ACTIVE_ITEM = 'More Services';
 
-export default function Sidebar() {
-  const [hovered, setHovered] = useState(null);
+function NavItem({ label, onClose, isMobile }) {
+  const [hovered, setHovered] = useState(false);
+  const active = label === ACTIVE_ITEM;
 
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={active ? undefined : (isMobile ? onClose : undefined)}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '8px 16px',
+        cursor: active ? 'default' : 'pointer',
+        background: active ? C.redLight : hovered ? C.pageBg : 'transparent',
+        color: active ? C.red : hovered ? C.text : C.muted,
+        fontWeight: active ? 600 : 400,
+        fontSize: 13,
+        transition: 'all 0.18s',
+        userSelect: 'none',
+      }}
+    >
+      <div style={{
+        width: 16,
+        height: 16,
+        borderRadius: 3,
+        background: active ? C.redGrad : '#E2E2E2',
+        flexShrink: 0,
+        transition: 'all 0.18s',
+      }} />
+      {label}
+    </div>
+  );
+}
+
+export default function Sidebar({ isMobile, isOpen, onClose }) {
   return (
     <div style={{
       width: 210,
-      minWidth: 210,
       height: '100vh',
       background: C.cardBg,
       borderRight: `1px solid ${C.border}`,
@@ -18,8 +52,20 @@ export default function Sidebar() {
       flexDirection: 'column',
       overflow: 'hidden',
       flexShrink: 0,
+      /* Mobile: fixed overlay that slides in from left */
+      ...(isMobile ? {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 300,
+        transform: isOpen ? 'translateX(0)' : 'translateX(-210px)',
+        transition: 'transform 0.25s ease',
+        boxShadow: isOpen ? '4px 0 24px rgba(0,0,0,0.15)' : 'none',
+      } : {
+        position: 'relative',
+      }),
     }}>
-      {/* Logo */}
+      {/* Logo row — with close button on mobile */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -41,45 +87,31 @@ export default function Sidebar() {
           fontSize: 14,
           flexShrink: 0,
         }}>P</div>
-        <span style={{ fontWeight: 800, fontSize: 16, color: C.text }}>Peko</span>
+        <span style={{ fontWeight: 800, fontSize: 16, color: C.text, flex: 1 }}>Peko</span>
+        {isMobile && (
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: 4,
+              outline: 'none',
+              borderRadius: 6,
+            }}
+          >
+            <IcoClose c={C.muted} s={16} />
+          </button>
+        )}
       </div>
 
       {/* Nav list */}
       <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = item === ACTIVE_ITEM;
-          const isHovered = hovered === item && !isActive;
-          return (
-            <div
-              key={item}
-              onMouseEnter={() => setHovered(item)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 16px',
-                cursor: isActive ? 'default' : 'pointer',
-                background: isActive ? C.redLight : isHovered ? C.pageBg : 'transparent',
-                color: isActive ? C.red : isHovered ? C.text : C.muted,
-                fontWeight: isActive ? 600 : 400,
-                fontSize: 13,
-                transition: 'all 0.15s',
-                userSelect: 'none',
-              }}
-            >
-              <div style={{
-                width: 16,
-                height: 16,
-                borderRadius: 3,
-                background: isActive ? C.redGrad : '#E2E2E2',
-                flexShrink: 0,
-                transition: 'all 0.15s',
-              }} />
-              {item}
-            </div>
-          );
-        })}
+        {NAV_ITEMS.map(item => (
+          <NavItem key={item} label={item} isMobile={isMobile} onClose={onClose} />
+        ))}
       </nav>
     </div>
   );

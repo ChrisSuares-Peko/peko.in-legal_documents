@@ -3,118 +3,143 @@ import { C } from '../constants/colors';
 import Breadcrumb from '../components/Breadcrumb';
 import DocCard from '../components/DocCard';
 import Footer from '../components/Footer';
-import { SearchIcon } from '../components/Icons';
+import { IcoSearch } from '../components/Icons';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('latest');
+  const [search, setSearch]               = useState('');
+  const [sort, setSort]                   = useState('latest');
   const [searchFocused, setSearchFocused] = useState(false);
-
-  const breadcrumbs = [
-    { label: "More Services" },
-    { label: "Legal Templates", onClick: onBack },
-    { label: cat.name },
-  ];
+  const { isMobile, isTablet }            = useBreakpoint();
 
   const filtered = useMemo(() => {
     let docs = [...cat.docs];
-
     if (search.trim()) {
-      const term = search.toLowerCase();
-      docs = docs.filter((d) => d.toLowerCase().includes(term));
+      docs = docs.filter(d => d.toLowerCase().includes(search.toLowerCase()));
     }
-
     if (sort === 'az') {
-      docs.sort((a, b) => a.localeCompare(b));
+      docs = docs.slice().sort((a, b) => a.localeCompare(b));
     } else if (sort === 'oldest') {
-      docs.reverse();
+      docs = docs.slice().reverse();
     }
-    // 'latest' = default insertion order
-
     return docs;
   }, [cat.docs, search, sort]);
 
-  return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
-      <Breadcrumb items={breadcrumbs} />
+  const px = isMobile ? 16 : 32;
 
-      {/* Header row */}
+  return (
+    <div style={{ flex: 1, overflowY: 'auto', padding: `24px ${px}px` }}>
+      <Breadcrumb items={[
+        { label: 'More Services' },
+        { label: 'Legal Templates', onClick: onBack },
+        { label: cat.name },
+      ]} />
+
+      {/* Page header card */}
       <div style={{
+        background: C.cardBg,
+        borderRadius: 14,
+        padding: isMobile ? '16px' : '20px 24px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
         display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        marginTop: 20,
-        marginBottom: 24,
-        gap: 16,
         flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 14,
+        marginBottom: 20,
       }}>
-        {/* Left: title + subtitle */}
-        <div>
+        {/* Category identity */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: cat.bg,
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            marginBottom: 6,
+            justifyContent: 'center',
+            fontSize: 24,
+            flexShrink: 0,
           }}>
-            <span style={{ fontSize: 26, lineHeight: 1 }}>{cat.icon}</span>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>
-              {cat.name}
-            </h1>
+            {cat.icon}
           </div>
-          <p style={{ fontSize: 13, color: C.muted }}>
-            {cat.docs.length} templates in this category
-          </p>
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontSize: isMobile ? 16 : 20,
+              fontWeight: 700,
+              color: C.text,
+              lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: isMobile ? 'normal' : 'nowrap',
+            }}>
+              {cat.name}
+            </div>
+            <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>
+              {cat.docs.length} templates in this category
+            </div>
+          </div>
         </div>
 
-        {/* Right: search + sort */}
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-          {/* Search input */}
+        {/* Controls */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          flexShrink: 0,
+          width: isMobile ? '100%' : 'auto',
+        }}>
+          {/* Search */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            background: C.pageBg,
-            borderRadius: 10,
-            padding: '0 12px',
+            gap: 7,
+            flex: isMobile ? 1 : 'none',
+            width: isMobile ? undefined : 190,
             height: 36,
+            borderRadius: 10,
+            background: C.pageBg,
             border: `1px solid ${searchFocused ? C.red : C.border}`,
-            transition: 'all 0.15s',
-            width: 220,
+            padding: '0 10px',
+            transition: 'border 0.18s',
+            minWidth: 0,
           }}>
-            <SearchIcon c={C.muted} s={14} />
+            <IcoSearch c={C.muted} s={13} />
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               placeholder="Search templates..."
               style={{
+                flex: 1,
                 border: 'none',
                 background: 'transparent',
                 outline: 'none',
                 fontSize: 13,
                 color: C.text,
-                width: '100%',
                 fontFamily: 'inherit',
+                minWidth: 0,
               }}
             />
           </div>
 
-          {/* Sort select */}
+          {/* Sort */}
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            onChange={e => setSort(e.target.value)}
             style={{
               height: 36,
               borderRadius: 8,
               border: `1px solid ${C.border}`,
               background: C.cardBg,
-              padding: '0 10px',
               fontSize: 13,
               color: C.text,
-              cursor: 'pointer',
+              padding: '0 8px',
               outline: 'none',
+              cursor: 'pointer',
               fontFamily: 'inherit',
+              flexShrink: 0,
             }}
           >
             <option value="latest">Latest</option>
@@ -124,28 +149,42 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
         </div>
       </div>
 
+      {/* Results count (search active only) */}
+      {search.trim() && (
+        <div style={{ fontSize: 13, color: C.muted, marginBottom: 14 }}>
+          {filtered.length} results for{' '}
+          <strong style={{ color: C.text }}>"{search}"</strong>
+        </div>
+      )}
+
       {/* Grid or empty state */}
       {filtered.length === 0 ? (
         <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '64px 0',
-          gap: 14,
+          background: C.cardBg,
+          borderRadius: 14,
+          border: `1px solid ${C.border}`,
+          padding: '56px 24px',
+          textAlign: 'center',
         }}>
-          <span style={{ fontSize: 36, lineHeight: 1 }}>📭</span>
-          <p style={{ fontSize: 14, color: C.muted, textAlign: 'center' }}>
-            No templates match your search — try a different term.
-          </p>
+          <div style={{ fontSize: 36, marginBottom: 14 }}>📭</div>
+          <div style={{ fontSize: 15, fontWeight: 500, color: C.text, marginBottom: 6 }}>
+            No templates match your search
+          </div>
+          <div style={{ fontSize: 13, color: C.muted }}>
+            Try a different term or clear the search
+          </div>
         </div>
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gap: 16,
+          gridTemplateColumns: isMobile
+            ? 'repeat(auto-fill, minmax(150px, 1fr))'
+            : isTablet
+              ? 'repeat(auto-fill, minmax(180px, 1fr))'
+              : 'repeat(4, minmax(0, 1fr))',
+          gap: isMobile ? 12 : 16,
         }}>
-          {filtered.map((name) => (
+          {filtered.map(name => (
             <DocCard
               key={name}
               name={name}

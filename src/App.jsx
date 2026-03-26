@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { CATEGORIES } from './constants/data';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
@@ -6,47 +6,60 @@ import NavPanel from './components/NavPanel';
 import PreviewModal from './components/PreviewModal';
 import CategoriesPage from './pages/CategoriesPage';
 import DocumentsPage from './pages/DocumentsPage';
+import { useBreakpoint } from './hooks/useBreakpoint';
 
 export default function App() {
-  const [screen, setScreen]     = useState("categories"); // "categories" | "documents" | "preview"
-  const [cat, setCat]           = useState(null);          // selected CATEGORY object
-  const [modalDoc, setModalDoc] = useState(null);          // previewed doc name string
-  const [navOpen, setNavOpen]   = useState(false);         // NavPanel toggle
+  const [screen,      setScreen]      = useState('categories');
+  const [cat,         setCat]         = useState(null);
+  const [modalDoc,    setModalDoc]    = useState(null);
+  const [navOpen,     setNavOpen]     = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { isMobile } = useBreakpoint();
+
+  // Auto-close sidebar when returning to desktop
+  useEffect(() => {
+    if (!isMobile) setSidebarOpen(false);
+  }, [isMobile]);
 
   const openCat = useCallback((c) => {
     setCat(c);
-    setScreen("documents");
+    setScreen('documents');
+    setSidebarOpen(false);
   }, []);
 
   const goBack = useCallback(() => {
-    setScreen("categories");
+    setScreen('categories');
     setCat(null);
   }, []);
 
   const openDoc = useCallback((name) => {
     setModalDoc(name);
-    setScreen("preview");
+    setScreen('preview');
   }, []);
 
   const closeModal = useCallback(() => {
-    setScreen("documents");
+    setScreen('documents');
+    setModalDoc(null);
   }, []);
 
   const handleNavigate = useCallback((id) => {
-    if (id === "categories") {
-      goBack();
-    } else if (id === "documents") {
-      // Default to first category if none selected
-      if (!cat) setCat(CATEGORIES[0]);
-      setScreen("documents");
-    } else if (id === "preview") {
+    if (id === 'categories') {
+      setScreen('categories');
+      setCat(null);
+      setModalDoc(null);
+    } else if (id === 'documents') {
+      setCat(c => c || CATEGORIES[0]);
+      setModalDoc(null);
+      setScreen('documents');
+    } else if (id === 'preview') {
       const targetCat = cat || CATEGORIES[0];
-      if (!cat) setCat(CATEGORIES[0]);
-      setModalDoc((prev) => prev || targetCat.docs[0]);
-      setScreen("preview");
+      setCat(targetCat);
+      setModalDoc(prev => prev || targetCat.docs[0]);
+      setScreen('preview');
     }
     setNavOpen(false);
-  }, [cat, goBack]);
+  }, [cat]);
 
   return (
     <div style={{
@@ -55,46 +68,49 @@ export default function App() {
       fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       background: '#F7F7F7',
       overflow: 'hidden',
+      position: 'relative',
     }}>
-      <Sidebar />
+      {/* Mobile sidebar backdrop */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.40)',
+            zIndex: 250,
+          }}
+        />
+      )}
 
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        minWidth: 0,
-      }}>
-        <Topbar onToggleNav={() => setNavOpen((v) => !v)} />
+      <Sidebar
+        isMobile={isMobile}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
-        {/* Content area — position:relative so NavPanel can anchor absolutely */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          {screen === "categories" && (
-            <CategoriesPage onOpen={openCat} />
-          )}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <Topbar
+          onToggleNav={() => setNavOpen(v => !v)}
+          onToggleSidebar={() => setSidebarOpen(v => !v)}
+          isMobile={isMobile}
+        />
 
-          {(screen === "documents" || screen === "preview") && cat && (
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+          {screen === 'categories' && <CategoriesPage onOpen={openCat} />}
+
+          {(screen === 'documents' || screen === 'preview') && cat && (
             <DocumentsPage cat={cat} onBack={goBack} onOpenDoc={openDoc} />
           )}
 
           {navOpen && (
-            <NavPanel
-              screen={screen}
-              onNavigate={handleNavigate}
-              onClose={() => setNavOpen(false)}
-            />
+            <NavPanel screen={screen} onNavigate={handleNavigate} onClose={() => setNavOpen(false)} />
           )}
         </div>
       </div>
 
-      {/* Preview modal rendered at root so it overlays everything */}
-      {screen === "preview" && modalDoc && (
-        <PreviewModal docName={modalDoc} onClose={closeModal} />
+      {screen === 'preview' && modalDoc && cat && (
+        <PreviewModal docName={modalDoc} cat={cat} onClose={closeModal} />
       )}
     </div>
   );

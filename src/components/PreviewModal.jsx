@@ -1,90 +1,35 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { C } from '../constants/colors';
-import { CloseIcon, DownloadIcon, ZoomInIcon, ZoomOutIcon, ResetZoomIcon } from './Icons';
+import { IcoClose, IcoDownload } from './Icons';
+import DocPreviewPage from './DocPreviewPage';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
-const ZOOM_MIN = 0.5;
-const ZOOM_MAX = 4;
-const ZOOM_STEP = 0.25;
+/* ── Sub-components ─────────────────────────────────────────────────── */
 
-function UseTemplateButton() {
+function ZoomStepButton({ onClick, children }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: '9px 18px',
-        borderRadius: 10,
-        border: `1.5px solid ${C.border}`,
-        background: C.cardBg,
-        fontSize: 13,
-        fontWeight: 600,
-        color: C.text,
-        cursor: 'pointer',
-        opacity: hovered ? 0.88 : 1,
-        transition: 'all 0.15s',
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      Use Template
-    </button>
-  );
-}
-
-function DownloadButton() {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        padding: '9px 18px',
-        borderRadius: 10,
-        border: 'none',
-        background: C.redGrad,
-        boxShadow: '0 2px 8px rgba(200,40,40,0.25)',
-        fontSize: 13,
-        fontWeight: 600,
-        color: '#fff',
-        cursor: 'pointer',
-        opacity: hovered ? 0.88 : 1,
-        transition: 'all 0.15s',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        fontFamily: 'inherit',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <DownloadIcon c="#fff" s={14} />
-      Download
-    </button>
-  );
-}
-
-function ZoomToolbarButton({ onClick, children, title }) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      title={title}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         width: 30,
         height: 30,
-        borderRadius: 7,
         border: 'none',
-        background: hovered ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)',
+        background: hovered ? C.subtle : 'transparent',
+        cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'pointer',
-        padding: 0,
+        fontSize: 18,
+        fontWeight: 400,
+        color: C.text,
         outline: 'none',
         transition: 'background 0.15s',
-        flexShrink: 0,
+        padding: 0,
+        fontFamily: 'inherit',
+        lineHeight: 1,
       }}
     >
       {children}
@@ -92,216 +37,31 @@ function ZoomToolbarButton({ onClick, children, title }) {
   );
 }
 
-export default function PreviewModal({ docName, onClose }) {
-  const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const dragRef = useRef(null);
-  const previewRef = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
-
-  const zoomIn = () => setZoom(z => Math.min(+(z + ZOOM_STEP).toFixed(2), ZOOM_MAX));
-  const zoomOut = () => setZoom(z => Math.max(+(z - ZOOM_STEP).toFixed(2), ZOOM_MIN));
-  const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
-
-  const onWheel = useCallback((e) => {
-    e.preventDefault();
-    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
-    setZoom(z => Math.min(Math.max(+(z + delta).toFixed(2), ZOOM_MIN), ZOOM_MAX));
-  }, []);
-
-  useEffect(() => {
-    const el = previewRef.current;
-    if (!el) return;
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, [onWheel]);
-
-  const onMouseDown = (e) => {
-    if (e.button !== 0) return;
-    dragRef.current = { startX: e.clientX - pan.x, startY: e.clientY - pan.y };
-    e.preventDefault();
-  };
-
-  const onMouseMove = useCallback((e) => {
-    if (!dragRef.current) return;
-    setPan({ x: e.clientX - dragRef.current.startX, y: e.clientY - dragRef.current.startY });
-  }, []);
-
-  const onMouseUp = useCallback(() => { dragRef.current = null; }, []);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [onMouseMove, onMouseUp]);
-
-  const isDragging = !!dragRef.current;
-
+function ResetButton({ onClick }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <div
-      onClick={onClose}
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(26,26,26,0.45)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '16px',
+        height: 30,
+        padding: '0 10px',
+        borderRadius: 8,
+        border: `1px solid ${hovered ? C.red : C.border}`,
+        background: 'transparent',
+        color: hovered ? C.red : C.muted,
+        fontSize: 11,
+        fontWeight: 600,
+        cursor: 'pointer',
+        outline: 'none',
+        transition: 'all 0.15s',
+        fontFamily: 'inherit',
+        whiteSpace: 'nowrap',
       }}
     >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 620,
-          maxWidth: '92vw',
-          borderRadius: 20,
-          background: C.cardBg,
-          boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Modal header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '18px 20px',
-          borderBottom: `1px solid ${C.border}`,
-          flexShrink: 0,
-        }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>
-              Document Preview
-            </div>
-            <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>Legal Template</div>
-          </div>
-          <CloseButton onClose={onClose} />
-        </div>
-
-        {/* Preview body */}
-        <div
-          ref={previewRef}
-          onMouseDown={onMouseDown}
-          style={{
-            height: 380,
-            background: '#2C2C2A',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: isDragging ? 'grabbing' : 'grab',
-            userSelect: 'none',
-            flexShrink: 0,
-          }}
-        >
-          {/* Zoom toolbar */}
-          <div style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            background: 'rgba(0,0,0,0.45)',
-            borderRadius: 10,
-            padding: '4px 6px',
-            backdropFilter: 'blur(6px)',
-          }}>
-            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); zoomOut(); }} title="Zoom out">
-              <ZoomOutIcon c="#D0D0D0" s={15} />
-            </ZoomToolbarButton>
-            <span style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: '#C0C0C0',
-              minWidth: 36,
-              textAlign: 'center',
-              fontFamily: 'inherit',
-            }}>
-              {Math.round(zoom * 100)}%
-            </span>
-            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); zoomIn(); }} title="Zoom in">
-              <ZoomInIcon c="#D0D0D0" s={15} />
-            </ZoomToolbarButton>
-            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); resetView(); }} title="Reset view">
-              <ResetZoomIcon c="#D0D0D0" s={15} />
-            </ZoomToolbarButton>
-          </div>
-
-          {/* Zoomable / pannable content */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <div style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transformOrigin: 'center center',
-              transition: dragRef.current ? 'none' : 'transform 0.1s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 14,
-            }}>
-              <span style={{ fontSize: 40, lineHeight: 1 }}>📄</span>
-              <div style={{
-                background: 'rgba(255,255,255,0.08)',
-                color: '#C0C0C0',
-                fontSize: 13,
-                borderRadius: 8,
-                padding: '8px 18px',
-                whiteSpace: 'nowrap',
-              }}>
-                No preview available
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Modal footer */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '16px 20px',
-          borderTop: `1px solid ${C.border}`,
-          gap: 12,
-          flexShrink: 0,
-        }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: C.text,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              {docName}
-            </div>
-            <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>
-              DOC · Legal Template
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <UseTemplateButton />
-            <DownloadButton />
-          </div>
-        </div>
-      </div>
-    </div>
+      Reset
+    </button>
   );
 }
 
@@ -313,23 +73,281 @@ function CloseButton({ onClose }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        width: 32,
-        height: 32,
+        width: 30,
+        height: 30,
         borderRadius: 8,
-        border: 'none',
-        background: C.subtle,
+        border: `1px solid ${C.border}`,
+        background: hovered ? C.subtle : 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
         padding: 0,
         outline: 'none',
-        transition: 'all 0.15s',
-        opacity: hovered ? 0.88 : 1,
+        transition: 'background 0.15s',
         flexShrink: 0,
       }}
     >
-      <CloseIcon c={C.muted} s={16} />
+      <IcoClose c={C.muted} s={14} />
     </button>
+  );
+}
+
+function UseTemplateButton({ isMobile }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: isMobile ? '8px 14px' : '9px 20px',
+        borderRadius: 10,
+        border: `1.5px solid ${hovered ? C.text : C.border}`,
+        background: C.cardBg,
+        color: hovered ? C.text : C.muted,
+        fontSize: isMobile ? 13 : 14,
+        fontWeight: 600,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        fontFamily: 'inherit',
+        whiteSpace: 'nowrap',
+        outline: 'none',
+        flex: isMobile ? 1 : 'none',
+      }}
+    >
+      Use Template
+    </button>
+  );
+}
+
+function DownloadButton({ isMobile }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: isMobile ? '8px 14px' : '9px 20px',
+        borderRadius: 10,
+        border: 'none',
+        background: C.redGrad,
+        boxShadow: '0 2px 8px rgba(200,40,40,0.25)',
+        color: '#fff',
+        fontSize: isMobile ? 13 : 14,
+        fontWeight: 600,
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 7,
+        opacity: hovered ? 0.88 : 1,
+        transition: 'opacity 0.15s',
+        fontFamily: 'inherit',
+        whiteSpace: 'nowrap',
+        outline: 'none',
+        flex: isMobile ? 1 : 'none',
+      }}
+    >
+      <IcoDownload c="#fff" s={15} />
+      Download
+    </button>
+  );
+}
+
+/* ── Main modal ─────────────────────────────────────────────────────── */
+
+export default function PreviewModal({ docName, cat, onClose }) {
+  const [zoom, setZoom]  = useState(85);
+  const { isMobile }     = useBreakpoint();
+
+  useEffect(() => {
+    const handler = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  // Auto-reduce zoom on mobile for better fit
+  useEffect(() => {
+    setZoom(isMobile ? 60 : 85);
+  }, [isMobile]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(26,26,26,0.55)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: isMobile ? 'flex-end' : 'center',
+        justifyContent: 'center',
+        padding: isMobile ? 0 : '16px',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: isMobile ? '100%' : 'min(900px, 96vw)',
+          height: isMobile ? '92vh' : 'min(92vh, 860px)',
+          borderRadius: isMobile ? '20px 20px 0 0' : 20,
+          background: C.cardBg,
+          boxShadow: '0 20px 64px rgba(0,0,0,0.25)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* ── Header ── */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: isMobile ? '12px 16px' : '14px 22px',
+          borderBottom: `1px solid ${C.border}`,
+          flexShrink: 0,
+          gap: 10,
+          flexWrap: 'wrap',
+        }}>
+          {/* Category icon tile */}
+          <div style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: cat.bg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 16,
+            flexShrink: 0,
+          }}>
+            {cat.icon}
+          </div>
+
+          {/* Doc info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontSize: isMobile ? 13 : 14,
+              fontWeight: 700,
+              color: C.text,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {docName}
+            </div>
+            {!isMobile && (
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 1 }}>
+                {cat.name} · DOCX
+              </div>
+            )}
+          </div>
+
+          {/* Zoom control group */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            border: `1px solid ${C.border}`,
+            borderRadius: 8,
+            overflow: 'hidden',
+            flexShrink: 0,
+          }}>
+            <ZoomStepButton onClick={() => setZoom(z => Math.max(50, z - 10))}>−</ZoomStepButton>
+            <div style={{
+              width: 46,
+              height: 30,
+              borderLeft: `1px solid ${C.border}`,
+              borderRight: `1px solid ${C.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 12,
+              fontWeight: 600,
+              color: C.text,
+              userSelect: 'none',
+            }}>
+              {zoom}%
+            </div>
+            <ZoomStepButton onClick={() => setZoom(z => Math.min(150, z + 10))}>+</ZoomStepButton>
+          </div>
+
+          {!isMobile && <ResetButton onClick={() => setZoom(85)} />}
+          <CloseButton onClose={onClose} />
+        </div>
+
+        {/* ── A4 Preview area ── */}
+        <div style={{
+          flex: 1,
+          overflow: 'auto',
+          background: '#404040',
+          padding: isMobile ? 12 : 24,
+          WebkitOverflowScrolling: 'touch',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              width: 595,
+              minWidth: 595,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+              overflow: 'hidden',
+            }}>
+              <DocPreviewPage zoom={zoom} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Info strip ── */}
+        <div style={{
+          background: C.pageBg,
+          borderTop: `1px solid ${C.border}`,
+          borderBottom: `1px solid ${C.border}`,
+          padding: isMobile ? '10px 16px' : '10px 22px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: isMobile ? 12 : 24,
+          flexShrink: 0,
+          flexWrap: 'wrap',
+        }}>
+          {(isMobile
+            ? [{ label: 'Format', val: 'DOCX / PDF' }, { label: 'Jurisdiction', val: 'India' }]
+            : [
+                { label: 'Format',       val: 'DOCX / PDF' },
+                { label: 'Language',     val: 'English' },
+                { label: 'Jurisdiction', val: 'India' },
+                { label: 'Last Updated', val: 'Jan 2025' },
+              ]
+          ).map(({ label, val }) => (
+            <div key={label} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <span style={{ fontSize: 11, color: C.muted }}>{label}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{val}</span>
+            </div>
+          ))}
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              background: '#DCFCE7',
+              color: '#16A34A',
+              fontSize: 11,
+              fontWeight: 700,
+              borderRadius: 20,
+              padding: '2px 10px',
+            }}>Free</span>
+            {!isMobile && (
+              <span style={{ fontSize: 12, color: C.muted }}>Instant download</span>
+            )}
+          </div>
+        </div>
+
+        {/* ── Footer ── */}
+        <div style={{
+          padding: isMobile ? '12px 16px' : '14px 22px',
+          display: 'flex',
+          justifyContent: isMobile ? 'stretch' : 'flex-end',
+          gap: 10,
+          flexShrink: 0,
+        }}>
+          <UseTemplateButton isMobile={isMobile} />
+          <DownloadButton isMobile={isMobile} />
+        </div>
+      </div>
+    </div>
   );
 }
