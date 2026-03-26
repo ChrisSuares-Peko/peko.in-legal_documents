@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { C } from '../constants/colors';
-import { CloseIcon, DownloadIcon } from './Icons';
+import { CloseIcon, DownloadIcon, ZoomInIcon, ZoomOutIcon, ResetZoomIcon } from './Icons';
+
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 4;
+const ZOOM_STEP = 0.25;
 
 function UseTemplateButton() {
   const [hovered, setHovered] = useState(false);
@@ -59,12 +63,87 @@ function DownloadButton() {
   );
 }
 
+function ZoomToolbarButton({ onClick, children, title }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      title={title}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: 7,
+        border: 'none',
+        background: hovered ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        padding: 0,
+        outline: 'none',
+        transition: 'background 0.15s',
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function PreviewModal({ docName, onClose }) {
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragRef = useRef(null);
+  const previewRef = useRef(null);
+
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
+
+  const zoomIn = () => setZoom(z => Math.min(+(z + ZOOM_STEP).toFixed(2), ZOOM_MAX));
+  const zoomOut = () => setZoom(z => Math.max(+(z - ZOOM_STEP).toFixed(2), ZOOM_MIN));
+  const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
+
+  const onWheel = useCallback((e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+    setZoom(z => Math.min(Math.max(+(z + delta).toFixed(2), ZOOM_MIN), ZOOM_MAX));
+  }, []);
+
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [onWheel]);
+
+  const onMouseDown = (e) => {
+    if (e.button !== 0) return;
+    dragRef.current = { startX: e.clientX - pan.x, startY: e.clientY - pan.y };
+    e.preventDefault();
+  };
+
+  const onMouseMove = useCallback((e) => {
+    if (!dragRef.current) return;
+    setPan({ x: e.clientX - dragRef.current.startX, y: e.clientY - dragRef.current.startY });
+  }, []);
+
+  const onMouseUp = useCallback(() => { dragRef.current = null; }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [onMouseMove, onMouseUp]);
+
+  const isDragging = !!dragRef.current;
 
   return (
     <div
@@ -111,25 +190,84 @@ export default function PreviewModal({ docName, onClose }) {
         </div>
 
         {/* Preview body */}
-        <div style={{
-          height: 380,
-          background: '#2C2C2A',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 14,
-          flexShrink: 0,
-        }}>
-          <span style={{ fontSize: 40, lineHeight: 1 }}>📄</span>
+        <div
+          ref={previewRef}
+          onMouseDown={onMouseDown}
+          style={{
+            height: 380,
+            background: '#2C2C2A',
+            position: 'relative',
+            overflow: 'hidden',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
+            flexShrink: 0,
+          }}
+        >
+          {/* Zoom toolbar */}
           <div style={{
-            background: 'rgba(255,255,255,0.08)',
-            color: '#C0C0C0',
-            fontSize: 13,
-            borderRadius: 8,
-            padding: '8px 18px',
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'rgba(0,0,0,0.45)',
+            borderRadius: 10,
+            padding: '4px 6px',
+            backdropFilter: 'blur(6px)',
           }}>
-            No preview available
+            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); zoomOut(); }} title="Zoom out">
+              <ZoomOutIcon c="#D0D0D0" s={15} />
+            </ZoomToolbarButton>
+            <span style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: '#C0C0C0',
+              minWidth: 36,
+              textAlign: 'center',
+              fontFamily: 'inherit',
+            }}>
+              {Math.round(zoom * 100)}%
+            </span>
+            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); zoomIn(); }} title="Zoom in">
+              <ZoomInIcon c="#D0D0D0" s={15} />
+            </ZoomToolbarButton>
+            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+            <ZoomToolbarButton onClick={(e) => { e.stopPropagation(); resetView(); }} title="Reset view">
+              <ResetZoomIcon c="#D0D0D0" s={15} />
+            </ZoomToolbarButton>
+          </div>
+
+          {/* Zoomable / pannable content */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              transformOrigin: 'center center',
+              transition: dragRef.current ? 'none' : 'transform 0.1s ease',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 14,
+            }}>
+              <span style={{ fontSize: 40, lineHeight: 1 }}>📄</span>
+              <div style={{
+                background: 'rgba(255,255,255,0.08)',
+                color: '#C0C0C0',
+                fontSize: 13,
+                borderRadius: 8,
+                padding: '8px 18px',
+                whiteSpace: 'nowrap',
+              }}>
+                No preview available
+              </div>
+            </div>
           </div>
         </div>
 
@@ -179,7 +317,7 @@ function CloseButton({ onClose }) {
         height: 32,
         borderRadius: 8,
         border: 'none',
-        background: hovered ? C.subtle : C.subtle,
+        background: C.subtle,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
