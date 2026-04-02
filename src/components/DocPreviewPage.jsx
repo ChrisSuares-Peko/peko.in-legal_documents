@@ -1,5 +1,5 @@
 import React from 'react';
-import { DOC_PAGES } from '../constants/data';
+import { DOC_PAGES, DISCLAIMER } from '../constants/data';
 
 export default function DocPreviewPage({ pageIndex }) {
   const blocks    = DOC_PAGES[pageIndex] || [];
@@ -118,9 +118,7 @@ export default function DocPreviewPage({ pageIndex }) {
             fontStyle: 'italic',
             lineHeight: 1.6,
           }}>
-            Disclaimer: This template is made available for general informational purposes only
-            and does not constitute legal, professional, or other advice. No lawyer-client
-            relationship is created by use of this template.
+            Disclaimer: {DISCLAIMER}
           </div>
         </>
       )}

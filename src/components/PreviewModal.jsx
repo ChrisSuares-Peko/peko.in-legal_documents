@@ -119,10 +119,10 @@ function CloseBtn({ onClose }) {
   );
 }
 
-function DownloadBtn({ isMobile, grad }) {
+function DownloadBtn({ isMobile, grad, onClick }) {
   const [h, setH] = useState(false);
   return (
-    <button onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+    <button onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
       style={{
         padding: isMobile ? '9px 20px' : '10px 24px',
         borderRadius: 10, border: 'none',
@@ -144,7 +144,7 @@ function DownloadBtn({ isMobile, grad }) {
 
 /* ── Main component ──────────────────────────────────────────────────── */
 
-export default function PreviewModal({ docName, cat, onClose }) {
+export default function PreviewModal({ docName, cat, onClose, onDownload }) {
   const { isMobile } = useBreakpoint();
   const th    = THEMES[cat.id];
   const total = DOC_PAGES.length;
@@ -367,7 +367,7 @@ export default function PreviewModal({ docName, cat, onClose }) {
           justifyContent: isMobile ? 'stretch' : 'flex-end',
           flexShrink: 0,
         }}>
-          <DownloadBtn isMobile={isMobile} grad={th.grad} />
+          <DownloadBtn isMobile={isMobile} grad={th.grad} onClick={onDownload} />
         </div>
       </div>
     </div>

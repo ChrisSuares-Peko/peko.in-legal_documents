@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 import { IcoSearch } from '../components/Icons';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
-export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
+export default function DocumentsPage({ cat, onBack, onOpenDoc, onDownload }) {
   const [search, setSearch]               = useState('');
   const [sort, setSort]                   = useState('latest');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -86,7 +86,7 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
                 {cat.name}
               </div>
               <div style={{ fontSize: 13, color: C.muted, marginTop: 3 }}>
-                {cat.docs.length} templates in this category
+                {cat.desc}
               </div>
             </div>
           </div>
@@ -201,6 +201,7 @@ export default function DocumentsPage({ cat, onBack, onOpenDoc }) {
               name={name}
               theme={th}
               onClick={() => onOpenDoc(name)}
+              onDownload={() => onDownload(name)}
             />
           ))}
         </div>

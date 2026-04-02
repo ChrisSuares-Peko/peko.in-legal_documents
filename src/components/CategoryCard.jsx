@@ -81,30 +81,30 @@ export default function CategoryCard({ cat, onClick }) {
 
       {/* Body */}
       <div style={{
-        padding: '14px 18px 16px',
+        padding: '12px 16px 14px',
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
-        gap: 10,
+        gap: 8,
         background: hov ? `${th.accent}10` : 'transparent',
         transition: 'background 0.18s',
       }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.35 }}>
+        {/* Name */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#1A1A1A', lineHeight: 1.3 }}>
           {cat.name}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ fontSize: 12, color: th.accent, fontWeight: 600, opacity: 0.8 }}>
+
+        {/* Description */}
+        <div style={{ fontSize: 11, color: '#8A8A8A', lineHeight: 1.5, flex: 1 }}>
+          {cat.desc}
+        </div>
+
+        {/* Count + View all */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: th.accent, fontWeight: 600, opacity: 0.85 }}>
             {cat.docs.length} Templates
           </div>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            fontSize: 12,
-            fontWeight: 600,
-            color: th.accent,
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, fontWeight: 600, color: th.accent }}>
             View all
             <svg
               width="11" height="11" fill="none"

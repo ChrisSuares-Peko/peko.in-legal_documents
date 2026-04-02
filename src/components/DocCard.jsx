@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { IcoDownload } from './Icons';
 
-export default function DocCard({ name, theme: th, onClick }) {
+export default function DocCard({ name, theme: th, onClick, onDownload }) {
   const [hov, setHov] = useState(false);
 
   const thumbBg  = hov ? `${th.accent}28` : `${th.accent}14`;
@@ -93,7 +93,7 @@ export default function DocCard({ name, theme: th, onClick }) {
           {name}
         </span>
         <button
-          onClick={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); onDownload(); }}
           onMouseEnter={e => {
             e.currentTarget.style.background = `${th.accent}20`;
             e.currentTarget.style.transform = 'scale(1.1)';

@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { CATEGORIES } from './constants/data';
+import { CATEGORIES, THEMES } from './constants/data';
+import { C } from './constants/colors';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import NavPanel from './components/NavPanel';
 import PreviewModal from './components/PreviewModal';
+import AcknowledgeModal from './components/AcknowledgeModal';
 import CategoriesPage from './pages/CategoriesPage';
 import DocumentsPage from './pages/DocumentsPage';
 import { useBreakpoint } from './hooks/useBreakpoint';
@@ -14,6 +16,7 @@ export default function App() {
   const [modalDoc,    setModalDoc]    = useState(null);
   const [navOpen,     setNavOpen]     = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [ackDoc,      setAckDoc]      = useState(null);
 
   const { isMobile } = useBreakpoint();
 
@@ -42,6 +45,10 @@ export default function App() {
     setScreen('documents');
     setModalDoc(null);
   }, []);
+
+  const triggerDownload = useCallback(name => setAckDoc(name), []);
+  const confirmDownload = useCallback(() => { setAckDoc(null); }, []);
+  const cancelAck       = useCallback(() => setAckDoc(null), []);
 
   const handleNavigate = useCallback((id) => {
     if (id === 'categories') {
@@ -100,7 +107,12 @@ export default function App() {
           {screen === 'categories' && <CategoriesPage onOpen={openCat} />}
 
           {(screen === 'documents' || screen === 'preview') && cat && (
-            <DocumentsPage cat={cat} onBack={goBack} onOpenDoc={openDoc} />
+            <DocumentsPage
+              cat={cat}
+              onBack={goBack}
+              onOpenDoc={openDoc}
+              onDownload={triggerDownload}
+            />
           )}
 
           {navOpen && (
@@ -110,7 +122,22 @@ export default function App() {
       </div>
 
       {screen === 'preview' && modalDoc && cat && (
-        <PreviewModal docName={modalDoc} cat={cat} onClose={closeModal} />
+        <PreviewModal
+          docName={modalDoc}
+          cat={cat}
+          onClose={closeModal}
+          onDownload={() => triggerDownload(modalDoc)}
+        />
+      )}
+
+      {ackDoc && (
+        <AcknowledgeModal
+          docName={ackDoc}
+          accentColor={cat ? THEMES[cat.id].accent : '#E83838'}
+          grad={cat ? THEMES[cat.id].grad : 'linear-gradient(135deg,#F76B6B,#C62828)'}
+          onConfirm={confirmDownload}
+          onClose={cancelAck}
+        />
       )}
     </div>
   );

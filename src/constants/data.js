@@ -1,3 +1,5 @@
+export const DISCLAIMER = "The templates available on this platform are provided for general informational purposes only and do not constitute legal advice. No lawyer-client relationship is created by use of these templates. Laws in India may vary based on specific facts and circumstances, and these templates may not be suitable for your needs. You are responsible for reviewing and adapting them. Peko makes no warranties regarding accuracy or completeness and disclaims all liability arising from their use. You should seek independent legal advice before relying on these templates.";
+
 export const NAV_ITEMS = [
   "Dashboard", "Bill Payments", "Corporate Travel", "Payroll",
   "Office Supplies", "Softwares", "Logistics", "Gift Cards",
@@ -30,6 +32,7 @@ export const CATEGORIES = [
     name: "General / Commercial Contracts",
     icon: "📋",
     bg: "#F0F4FF",
+    desc: "NDAs, service agreements, vendor contracts and other everyday business documents.",
     docs: [
       "Non-Disclosure Agreement (NDA) - Mutual",
       "Non-Disclosure Agreement (NDA) - One-Way",
@@ -57,6 +60,7 @@ export const CATEGORIES = [
     name: "Corporate / Start-up / Investment",
     icon: "🏢",
     bg: "#F5F3FF",
+    desc: "Founders agreements, SHA, ESOP, term sheets and essential start-up legal documents.",
     docs: [
       "Shareholders Agreement (SHA)",
       "Share Subscription Agreement (SSA)",
@@ -74,6 +78,7 @@ export const CATEGORIES = [
     name: "Employment & HR",
     icon: "👥",
     bg: "#F0FFF4",
+    desc: "Offer letters, employment agreements, policies and HR lifecycle documents.",
     docs: [
       "Employment Agreement",
       "Offer Letter",
@@ -95,6 +100,7 @@ export const CATEGORIES = [
     name: "Real Estate & Property",
     icon: "🏠",
     bg: "#FFF7ED",
+    desc: "Lease deeds, rent agreements, sale deeds and property transfer documents.",
     docs: [
       "Lease Agreement (Residential)",
       "Commercial Lease Deed",
@@ -116,6 +122,7 @@ export const CATEGORIES = [
     name: "Litigation & Court Documents",
     icon: "⚖️",
     bg: "#FFF0F0",
+    desc: "Legal notices, court petitions, affidavits and litigation support documents.",
     docs: [
       "Suit for Recovery",
       "Written Statement",
@@ -141,6 +148,7 @@ export const CATEGORIES = [
     name: "Family Law",
     icon: "👨‍👩‍👧",
     bg: "#FDF0FF",
+    desc: "Divorce petitions, custody agreements, maintenance and domestic matters.",
     docs: [
       "Mutual Divorce Petition",
       "Contested Divorce Petition",
@@ -155,6 +163,7 @@ export const CATEGORIES = [
     name: "Banking / Finance / Recovery",
     icon: "🏦",
     bg: "#F0FFF4",
+    desc: "Loan agreements, guarantees, demand notices and debt recovery documents.",
     docs: [
       "Loan Agreement",
       "Promissory Note",
@@ -168,6 +177,7 @@ export const CATEGORIES = [
     name: "Intellectual Property (IP)",
     icon: "💡",
     bg: "#FFFBEB",
+    desc: "Trademark licences, IP assignments, cease & desist and IP protection documents.",
     docs: [
       "Trademark License Agreement",
       "IP Assignment Agreement",
@@ -180,6 +190,7 @@ export const CATEGORIES = [
     name: "E-commerce / Tech / Platform",
     icon: "💻",
     bg: "#F0F4FF",
+    desc: "SaaS agreements, DPDP-compliant DPAs, EULAs and marketplace contracts.",
     docs: [
       "Seller Agreement (Marketplace)",
       "Vendor Onboarding Agreement",
@@ -195,6 +206,7 @@ export const CATEGORIES = [
     name: "Notices & Declarations",
     icon: "📢",
     bg: "#FFF7ED",
+    desc: "Legal notices, affidavits, authority letters and formal declarations.",
     docs: [
       "Legal Notice (Recovery / Breach)",
       "Affidavit (Name Change)",
@@ -211,6 +223,7 @@ export const CATEGORIES = [
     name: "Miscellaneous",
     icon: "📁",
     bg: "#F3F4F6",
+    desc: "Power of attorney, wills, trust deeds and other general legal documents.",
     docs: [
       "Power of Attorney (General)",
       "Will",
